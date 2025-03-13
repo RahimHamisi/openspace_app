@@ -73,7 +73,8 @@ class MapScreenState extends State<MapScreen> {
     LatLng? userLocation = await _locationService.getUserLocation();
     if (userLocation != null) {
       print(
-        "User's current location: Lat: ${userLocation.latitude}, Lng: ${userLocation.longitude}",
+        "User's current location: Lat: ${userLocation
+            .latitude}, Lng: ${userLocation.longitude}",
       );
       // Later, you can integrate this with your backend
     } else {
@@ -103,8 +104,10 @@ class MapScreenState extends State<MapScreen> {
                 flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
               ),
               initialCenter:
-                  _initialPosition, // ✅ Use 'initialCenter' instead of 'center'
-              initialZoom: 14.0, // ✅ Use 'initialZoom' instead of 'zoom'
+              _initialPosition,
+              // ✅ Use 'initialCenter' instead of 'center'
+              initialZoom: 14.0,
+              // ✅ Use 'initialZoom' instead of 'zoom'
               maxZoom: 18.0,
               minZoom: 6.0,
               // onTap: (tapPosition, point) {
@@ -119,9 +122,9 @@ class MapScreenState extends State<MapScreen> {
               TileLayer(
                 key: ValueKey(isSatelliteView), // Forces rebuild
                 urlTemplate:
-                    isSatelliteView
-                        ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                        : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                isSatelliteView
+                    ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
               ),
 
               MarkerLayer(
@@ -209,6 +212,37 @@ class MapScreenState extends State<MapScreen> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+      // **Bottom Navigation Bar**
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, // Set index based on current screen
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/map');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/report');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Map',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.report),
+            label: 'Report',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),

@@ -13,15 +13,7 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 subprojects {
-    afterEvaluate {
-        android {
-            compileSdkVersion(29)
-            defaultConfig {
-            targetSdkVersion(29)
-            }
-        }
-        project.evaluationDependsOn(":app")
-    }
+    project.evaluationDependsOn(":app")
 }
 
 tasks.register<Delete>("clean") {
