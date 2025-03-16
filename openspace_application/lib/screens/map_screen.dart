@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:latlong2/latlong.dart';
-// ignore: unused_import
-// import 'package:open_space_application/utils/map_helper.dart';
-import '../utils/location_service.dart'; // Import location service
-// import '../utils/map_helper.dart';
+import '../utils/location_service.dart';
+import '../utils/map_utils.dart';
+import 'user_details_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -15,135 +14,119 @@ class MapScreen extends StatefulWidget {
 }
 
 class MapScreenState extends State<MapScreen> {
-  final MapController _mapController = MapController();
-
-  LatLng _initialPosition = LatLng(
-    -6.7741,
-    39.2026,
-  ); // Kinondoni, Dar es Salaam
+  late final MapController _mapController;
   final LocationService _locationService = LocationService();
   bool isSatelliteView = false;
+  bool isDroppingPin = false;
+
+  LatLng _initialPosition = const LatLng(-6.7741, 39.2026); // Kinondoni
+  final List<Marker> kinondoniSpaces = getKinondoniSpaces();
+  final List<Marker> reportMarkers = [];
 
   @override
   void initState() {
     super.initState();
+    _mapController = MapController();
     _getUserLocation();
   }
 
-  void _getUserLocation() async {
-    LatLng? userLocation = await _locationService.getUserLocation();
+  Future<void> _getUserLocation() async {
+    final userLocation = await _locationService.getUserLocation();
     if (userLocation != null) {
-      setState(() {
-        _initialPosition = userLocation;
-      });
+      setState(() => _initialPosition = userLocation);
       _mapController.move(userLocation, 15.0);
     }
   }
 
-  // Zoom In
-  void _zoomIn() {
-    _mapController.move(
-      _mapController.camera.center,
-      _mapController.camera.zoom + 1,
-    );
-  }
-
-  // Zoom Out
-  void _zoomOut() {
-    _mapController.move(
-      _mapController.camera.center,
-      _mapController.camera.zoom - 1,
-    );
-  }
-
-  void _searchAndNavigate(LatLng position) {
-    setState(() => _initialPosition = position);
-    _mapController.move(position, 15.0);
-  }
-
-  // Toggle Map View
-  void _toggleMapView() {
-    setState(() {
-      isSatelliteView = !isSatelliteView;
-    });
-  }
-
-  // Function to report current location
   void _reportCurrentLocation() async {
-    LatLng? userLocation = await _locationService.getUserLocation();
+    final userLocation = await _locationService.getUserLocation();
     if (userLocation != null) {
-      print(
-        "User's current location: Lat: ${userLocation
-            .latitude}, Lng: ${userLocation.longitude}",
-      );
-      // Later, you can integrate this with your backend
+      final areaName = await _locationService.getAreaName(userLocation) ?? "Current Location";
+      _navigateToReportForm(userLocation, areaName);
     } else {
-      print("Failed to get user's current location.");
+      // Replace print with proper logging in production
+      debugPrint("Failed to get user's current location.");
     }
+  }
+
+  void _navigateToReportForm(LatLng location, String areaName) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => UserDetailsScreen(
+          location: location,
+          areaName: areaName,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    ).then((newMarker) {
+      if (newMarker != null) setState(() => reportMarkers.add(newMarker));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("OpenStreetMap - Kinondoni"),
+        title: const Text("OpenStreetMap - Kinondoni"),
         actions: [
           IconButton(
             icon: Icon(isSatelliteView ? Icons.map : Icons.photo),
-            onPressed: _toggleMapView, // Toggle between street and satellite
+            onPressed: () => setState(() => isSatelliteView = !isSatelliteView),
           ),
         ],
       ),
       body: Stack(
         children: [
-          // Map Implementation
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              interactionOptions: InteractionOptions(
+              interactionOptions: const InteractionOptions(
                 flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
               ),
-              initialCenter:
-              _initialPosition,
-              // ✅ Use 'initialCenter' instead of 'center'
+              initialCenter: _initialPosition,
               initialZoom: 14.0,
-              // ✅ Use 'initialZoom' instead of 'zoom'
               maxZoom: 18.0,
               minZoom: 6.0,
-              // onTap: (tapPosition, point) {
-              //   setState(() {
-              //     _initialPosition = onMapTap(point); // Update marker position
-              //   });
-              // },
-              onTap: (tapPosition, point) => _searchAndNavigate(point),
+              onTap: (tapPosition, point) async {
+                if (isDroppingPin) {
+                  setState(() => isDroppingPin = false);
+                  final areaName = await _locationService.getAreaName(point) ?? "Unknown Area";
+                  _navigateToReportForm(point, areaName);
+                } else {
+                  setState(() => _initialPosition = point);
+                  _mapController.move(point, 15.0);
+                }
+              },
             ),
-
             children: [
               TileLayer(
-                key: ValueKey(isSatelliteView), // Forces rebuild
-                urlTemplate:
-                isSatelliteView
+                key: ValueKey(isSatelliteView),
+                urlTemplate: isSatelliteView
                     ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                     : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                subdomains: const ['a', 'b', 'c'],
               ),
-
               MarkerLayer(
                 markers: [
                   Marker(
                     point: _initialPosition,
                     width: 80.0,
                     height: 80.0,
-                    child: Icon(
-                      Icons.location_pin,
-                      color: Colors.red,
-                      size: 40,
-                    ),
+                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
                   ),
+                  ...kinondoniSpaces,
+                  ...reportMarkers,
                 ],
               ),
             ],
           ),
-          // / Search Bar
           Positioned(
             top: 40,
             left: 20,
@@ -165,22 +148,17 @@ class MapScreenState extends State<MapScreen> {
                   ),
                 );
               },
-              suggestionsCallback: (pattern) async {
-                return await _locationService.searchLocation(pattern);
-              },
-              itemBuilder: (context, LocationSuggestion suggestion) {
-                return ListTile(
-                  leading: const Icon(Icons.location_on),
-                  title: Text(suggestion.name),
-                );
-              },
-              onSelected: (LocationSuggestion suggestion) {
-                _searchAndNavigate(suggestion.position);
+              suggestionsCallback: (pattern) async => await _locationService.searchLocation(pattern),
+              itemBuilder: (context, suggestion) => ListTile(
+                leading: const Icon(Icons.location_on),
+                title: Text(suggestion.name),
+              ),
+              onSelected: (suggestion) {
+                setState(() => _initialPosition = suggestion.position);
+                _mapController.move(suggestion.position, 15.0);
               },
             ),
           ),
-
-          // Zoom and Locate Buttons
           Positioned(
             bottom: 20,
             right: 20,
@@ -188,13 +166,13 @@ class MapScreenState extends State<MapScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 FloatingActionButton(
-                  onPressed: _zoomIn,
+                  onPressed: () => zoomIn(_mapController),
                   heroTag: "zoomIn",
                   child: const Icon(Icons.add),
                 ),
                 const SizedBox(height: 10),
                 FloatingActionButton(
-                  onPressed: _zoomOut,
+                  onPressed: () => zoomOut(_mapController),
                   heroTag: "zoomOut",
                   child: const Icon(Icons.remove),
                 ),
@@ -206,18 +184,25 @@ class MapScreenState extends State<MapScreen> {
                 ),
                 const SizedBox(height: 10),
                 FloatingActionButton(
-                  onPressed: _reportCurrentLocation,
-                  heroTag: "reportLocation",
+                  onPressed: () => setState(() => isDroppingPin = true),
+                  heroTag: "reportPin",
+                  backgroundColor: Colors.green,
                   child: const Icon(Icons.report),
+                ),
+                const SizedBox(height: 10),
+                FloatingActionButton(
+                  onPressed: _reportCurrentLocation,
+                  heroTag: "reportCurrent",
+                  backgroundColor: Colors.orange,
+                  child: const Icon(Icons.location_on),
                 ),
               ],
             ),
           ),
         ],
       ),
-      // **Bottom Navigation Bar**
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // Set index based on current screen
+        currentIndex: 0,
         onTap: (index) {
           switch (index) {
             case 0:
@@ -232,18 +217,9 @@ class MapScreenState extends State<MapScreen> {
           }
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report),
-            label: 'Report',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(icon: Icon(Icons.report), label: 'Report'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
