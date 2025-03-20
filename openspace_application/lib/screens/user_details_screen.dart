@@ -69,94 +69,96 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> with SingleTicker
                           color: Colors.white,
                           child: Padding(
                             padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "User Details",
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue[700],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.close, color: Colors.red),
-                                      onPressed: () => Navigator.pop(context),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                TextField(
-                                  controller: _nameController,
-                                  decoration: InputDecoration(
-                                    labelText: "Full Name (Optional)",
-                                    labelStyle: TextStyle(color: Colors.grey[600]),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                    filled: true,
-                                    fillColor: Colors.grey[100],
-                                    prefixIcon: Icon(Icons.person, color: Colors.blue[700]),
-                                  ),
-                                  style: const TextStyle(color: Colors.black87),
-                                ),
-                                const SizedBox(height: 15),
-                                TextField(
-                                  controller: _phoneController,
-                                  decoration: InputDecoration(
-                                    labelText: "Phone Number (Optional)",
-                                    labelStyle: TextStyle(color: Colors.grey[600]),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                    filled: true,
-                                    fillColor: Colors.grey[100],
-                                    prefixIcon: Icon(Icons.phone, color: Colors.blue[700]),
-                                  ),
-                                  keyboardType: TextInputType.phone,
-                                  style: const TextStyle(color: Colors.black87),
-                                ),
-                                const SizedBox(height: 15),
-                                Card(
-                                  color: Colors.grey[100],
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  child: ListTile(
-                                    leading: Icon(Icons.location_on, color: Colors.blue[700]),
-                                    title: Text(widget.areaName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                                    subtitle: Text(
-                                      "${widget.location.latitude.toStringAsFixed(4)}, ${widget.location.longitude.toStringAsFixed(4)}",
-                                      style: TextStyle(color: Colors.grey[600]),
-                                    ),
-                                    enabled: false,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => IssueDetailsScreen(
-                                            location: widget.location,
-                                            areaName: widget.areaName,
-                                            name: _nameController.text,
-                                            phone: _phoneController.text,
-                                          ),
+                            child: SingleChildScrollView( // Wrap Column in SingleChildScrollView
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "User Details",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue[700],
                                         ),
-                                      );
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue[700],
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                    ),
-                                    child: const Text("Next", style: TextStyle(color: Colors.white, fontSize: 16)),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.close, color: Colors.red),
+                                        onPressed: () => Navigator.pop(context),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 20),
+                                  TextField(
+                                    controller: _nameController,
+                                    decoration: InputDecoration(
+                                      labelText: "Full Name (Optional)",
+                                      labelStyle: TextStyle(color: Colors.grey[600]),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                      filled: true,
+                                      fillColor: Colors.grey[100],
+                                      prefixIcon: Icon(Icons.person, color: Colors.blue[700]),
+                                    ),
+                                    style: const TextStyle(color: Colors.black87),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  TextField(
+                                    controller: _phoneController,
+                                    decoration: InputDecoration(
+                                      labelText: "Phone Number (Optional)",
+                                      labelStyle: TextStyle(color: Colors.grey[600]),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                      filled: true,
+                                      fillColor: Colors.grey[100],
+                                      prefixIcon: Icon(Icons.phone, color: Colors.blue[700]),
+                                    ),
+                                    keyboardType: TextInputType.phone,
+                                    style: const TextStyle(color: Colors.black87),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  Card(
+                                    color: Colors.grey[100],
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    child: ListTile(
+                                      leading: Icon(Icons.location_on, color: Colors.blue[700]),
+                                      title: Text(widget.areaName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                                      subtitle: Text(
+                                        "${widget.location.latitude.toStringAsFixed(4)}, ${widget.location.longitude.toStringAsFixed(4)}",
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                      enabled: false,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => IssueDetailsScreen(
+                                              location: widget.location,
+                                              areaName: widget.areaName,
+                                              name: _nameController.text,
+                                              phone: _phoneController.text,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue[700],
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                      ),
+                                      child: const Text("Next", style: TextStyle(color: Colors.white, fontSize: 16)),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

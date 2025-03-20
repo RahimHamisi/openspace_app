@@ -13,11 +13,14 @@ class MapScreen extends StatefulWidget {
   MapScreenState createState() => MapScreenState();
 }
 
-class MapScreenState extends State<MapScreen> {
+class MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixin {
   late final MapController _mapController;
   final LocationService _locationService = LocationService();
   bool isSatelliteView = false;
   bool isDroppingPin = false;
+  bool _isTracking = false; // Variable to track whether location tracking is active
+  late AnimationController _controller;
+  late Animation<double> _opacityAnimation;
 
   LatLng _initialPosition = const LatLng(-6.7741, 39.2026); // Kinondoni
   final List<Marker> kinondoniSpaces = getKinondoniSpaces();
@@ -28,13 +31,30 @@ class MapScreenState extends State<MapScreen> {
     super.initState();
     _mapController = MapController();
     _getUserLocation();
+
+    // Initialize the AnimationController for blinking effect
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1),
+      lowerBound: 0.0,
+      upperBound: 1.0,
+    )..repeat(reverse: true);  // Repeat the animation to create blinking effect
+
+    // Set up the opacity animation for blinking effect
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Don't forget to dispose of the controller
+    super.dispose();
   }
 
   Future<void> _getUserLocation() async {
     final userLocation = await _locationService.getUserLocation();
     if (userLocation != null) {
       setState(() => _initialPosition = userLocation);
-      _mapController.move(userLocation, 15.0);
+      _mapController.move(userLocation, 10.0);
     }
   }
 
@@ -70,6 +90,18 @@ class MapScreenState extends State<MapScreen> {
     });
   }
 
+  void _toggleLocationTracking() {
+    setState(() {
+      _isTracking = !_isTracking;
+      if (_isTracking) {
+        _controller.forward(); // Start blinking when tracking is on
+      } else {
+        _controller.stop(); // Stop blinking when tracking is off
+        _controller.value = 1.0; // Ensure the icon stays fully visible when tracking is off
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,8 +123,8 @@ class MapScreenState extends State<MapScreen> {
                 flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
               ),
               initialCenter: _initialPosition,
-              initialZoom: 14.0,
-              maxZoom: 18.0,
+              initialZoom: 10.0,
+              maxZoom: 26.0,
               minZoom: 6.0,
               onTap: (tapPosition, point) async {
                 if (isDroppingPin) {
@@ -165,40 +197,78 @@ class MapScreenState extends State<MapScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Zoom In Button
                 FloatingActionButton(
                   onPressed: () => zoomIn(_mapController),
                   heroTag: "zoomIn",
-                  child: const Icon(Icons.add),
+                  mini: true,  // Makes the button smaller
+                  child: const Icon(
+                    Icons.add,
+                    size: 24,  // Adjust icon size
+                  ),
                 ),
                 const SizedBox(height: 10),
+                
+                // Zoom Out Button
                 FloatingActionButton(
                   onPressed: () => zoomOut(_mapController),
                   heroTag: "zoomOut",
-                  child: const Icon(Icons.remove),
+                  mini: true,  // Makes the button smaller
+                  child: const Icon(
+                    Icons.remove,
+                    size: 20,  // Adjust icon size as per your requirement
+                  ),
                 ),
                 const SizedBox(height: 10),
+                
+                // Locate Me Button with Blinking Effect
                 FloatingActionButton(
-                  onPressed: _getUserLocation,
+                  onPressed: _toggleLocationTracking,  // Toggle location tracking and blinking
                   heroTag: "locateMe",
-                  child: const Icon(Icons.my_location),
+                  mini: true,  // Makes the button smaller
+                  child: AnimatedBuilder(
+                    animation: _opacityAnimation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _opacityAnimation.value,  // Control blinking via opacity
+                        child: const Icon(
+                          Icons.my_location,
+                          size: 24,  // Adjust icon size if needed
+                        ),
+                      );
+                    },
+                  ),
                 ),
                 const SizedBox(height: 10),
+                
+                // Report Pin Button
                 FloatingActionButton(
                   onPressed: () => setState(() => isDroppingPin = true),
                   heroTag: "reportPin",
                   backgroundColor: Colors.green,
-                  child: const Icon(Icons.report),
+                  mini: true,  // Makes the button smaller
+                  child: const Icon(
+                    Icons.report,
+                    size: 24,  // Adjust icon size
+                  ),
                 ),
                 const SizedBox(height: 10),
+                
+                // Report Current Location Button
                 FloatingActionButton(
                   onPressed: _reportCurrentLocation,
                   heroTag: "reportCurrent",
-                  backgroundColor: Colors.orange,
-                  child: const Icon(Icons.location_on),
+                  backgroundColor: const Color(0xFFFF9800),
+                  mini: true,  // Makes the button smaller
+                  child: const Icon(
+                    Icons.location_on,
+                    size: 24,  // Adjust icon size
+                  ),
                 ),
               ],
             ),
-          ),
+          )
+
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
