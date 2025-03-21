@@ -1,5 +1,9 @@
+// ignore_for_file: unnecessary_null_comparison, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:latlong2/latlong.dart';
 import '../utils/location_service.dart';
@@ -8,7 +12,6 @@ import 'user_details_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
-
   @override
   MapScreenState createState() => MapScreenState();
 }
@@ -18,58 +21,118 @@ class MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixi
   final LocationService _locationService = LocationService();
   bool isSatelliteView = false;
   bool isDroppingPin = false;
-  bool _isTracking = false; // Variable to track whether location tracking is active
+  bool _isTracking = false;
   late AnimationController _controller;
   late Animation<double> _opacityAnimation;
-
   LatLng _initialPosition = const LatLng(-6.7741, 39.2026); // Kinondoni
-  final List<Marker> kinondoniSpaces = getKinondoniSpaces();
+  late final List<Marker> kinondoniSpaces = getKinondoniSpaces();
   final List<Marker> reportMarkers = [];
+  bool _isLoading = true;
+  bool _isMapReady = false;
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
-    _getUserLocation();
 
-    // Initialize the AnimationController for blinking effect
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
       lowerBound: 0.0,
       upperBound: 1.0,
-    )..repeat(reverse: true);  // Repeat the animation to create blinking effect
+    );
+    _opacityAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(_controller);
 
-    // Set up the opacity animation for blinking effect
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkMapInitialization();
+    });
+
+    // Listen to location stream for tracking
+    _locationService.getLocationStream().listen((position) {
+      if (_isTracking && _isMapReady && mounted) {
+        _mapController.move(LatLng(position.latitude, position.longitude), 15.0);
+      }
+    });
+  }
+
+  void _checkMapInitialization() {
+    try {
+      if (_mapController.camera != null) {
+        setState(() => _isMapReady = true);
+        _getUserLocation();
+      } else {
+        Future.delayed(const Duration(milliseconds: 100), _checkMapInitialization);
+      }
+    } catch (e) {
+      Future.delayed(const Duration(milliseconds: 100), _checkMapInitialization);
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose(); // Don't forget to dispose of the controller
+    _controller.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 
   Future<void> _getUserLocation() async {
-    final userLocation = await _locationService.getUserLocation();
-    if (userLocation != null) {
-      setState(() => _initialPosition = userLocation);
-      _mapController.move(userLocation, 10.0);
+    setState(() => _isLoading = true);
+    try {
+      final userLocation = await _locationService.getUserLocation(useCache: true);
+      if (userLocation != null && mounted) {
+        setState(() {
+          _initialPosition = userLocation;
+          _isLoading = false;
+        });
+        if (_isMapReady) {
+          _mapController.move(userLocation, 15.0);
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      debugPrint('Error getting user location: $e');
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _reportCurrentLocation() async {
-    final userLocation = await _locationService.getUserLocation();
-    if (userLocation != null) {
-      final areaName = await _locationService.getAreaName(userLocation) ?? "Current Location";
-      _navigateToReportForm(userLocation, areaName);
-    } else {
-      // Replace print with proper logging in production
-      debugPrint("Failed to get user's current location.");
+    if (!mounted) return;
+    final currentContext = context;
+
+    showDialog(
+      context: currentContext,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+
+    try {
+      final userLocation = await _locationService.getUserLocation(useCache: false);
+      Navigator.of(currentContext).pop();
+
+      if (userLocation != null && mounted) {
+        final areaName = await _locationService.getAreaName(userLocation) ?? "Current Location";
+        _navigateToReportForm(userLocation, areaName);
+      } else {
+        ScaffoldMessenger.of(currentContext).showSnackBar(
+          const SnackBar(content: Text("Failed to get your current location.")),
+        );
+      }
+    } catch (e) {
+      Navigator.of(currentContext).pop();
+      if (mounted) {
+        ScaffoldMessenger.of(currentContext).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}")),
+        );
+      }
     }
   }
 
   void _navigateToReportForm(LatLng location, String areaName) {
+    if (!mounted) return;
+
     Navigator.push(
       context,
       PageRouteBuilder(
@@ -86,7 +149,7 @@ class MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixi
         },
       ),
     ).then((newMarker) {
-      if (newMarker != null) setState(() => reportMarkers.add(newMarker));
+      if (newMarker != null && mounted) setState(() => reportMarkers.add(newMarker));
     });
   }
 
@@ -94,10 +157,11 @@ class MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixi
     setState(() {
       _isTracking = !_isTracking;
       if (_isTracking) {
-        _controller.forward(); // Start blinking when tracking is on
+        _controller.repeat(reverse: true);
+        _getUserLocation(); // Initial update when tracking starts
       } else {
-        _controller.stop(); // Stop blinking when tracking is off
-        _controller.value = 1.0; // Ensure the icon stays fully visible when tracking is off
+        _controller.stop();
+        _controller.value = 1.0;
       }
     });
   }
@@ -116,54 +180,104 @@ class MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixi
       ),
       body: Stack(
         children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              interactionOptions: const InteractionOptions(
-                flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
-              ),
-              initialCenter: _initialPosition,
-              initialZoom: 10.0,
-              maxZoom: 26.0,
-              minZoom: 6.0,
-              onTap: (tapPosition, point) async {
-                if (isDroppingPin) {
-                  setState(() => isDroppingPin = false);
-                  final areaName = await _locationService.getAreaName(point) ?? "Unknown Area";
-                  _navigateToReportForm(point, areaName);
-                } else {
-                  setState(() => _initialPosition = point);
-                  _mapController.move(point, 15.0);
-                }
-              },
-            ),
-            children: [
-              TileLayer(
-                key: ValueKey(isSatelliteView),
-                urlTemplate: isSatelliteView
-                    ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                subdomains: const ['a', 'b', 'c'],
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: _initialPosition,
-                    width: 80.0,
-                    height: 80.0,
-                    child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
+                    ),
+                    initialCenter: _initialPosition,
+                    initialZoom: 13.0,
+                    maxZoom: 19.0,
+                    minZoom: 6.0,
+                    onMapEvent: (event) {
+                      if (!_isMapReady && event.source == MapEventSource.mapController) {
+                        setState(() => _isMapReady = true);
+                      }
+                    },
+                    onTap: (tapPosition, point) async {
+                      if (!mounted) return;
+
+                      if (isDroppingPin) {
+                        setState(() => isDroppingPin = false);
+                        final currentContext = context;
+
+                        showDialog(
+                          context: currentContext,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return const Center(child: CircularProgressIndicator());
+                          },
+                        );
+
+                        final areaName = await _locationService.getAreaName(point) ?? "Unknown Area";
+                        if (!mounted) return;
+                        Navigator.of(currentContext).pop();
+                        _navigateToReportForm(point, areaName);
+                      } else {
+                        if (_isMapReady) {
+                          _mapController.move(point, _mapController.camera.zoom);
+                        }
+                      }
+                    },
                   ),
-                  ...kinondoniSpaces,
-                  ...reportMarkers,
-                ],
-              ),
-            ],
-          ),
+                  children: [
+                    TileLayer(
+                      key: ValueKey(isSatelliteView),
+                      urlTemplate: isSatelliteView
+                          ? "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                          : "http://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      userAgentPackageName: "com.example.openspace_application",
+                      tileProvider: CancellableNetworkTileProvider(),
+                      keepBuffer: 5,
+                      maxZoom: 19,
+                    ),
+                    CurrentLocationLayer( // Updated for user location
+                      positionStream: _locationService.getLocationStream(),
+                      // Removed followOnLocationUpdate; handled manually via _isTracking
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        ...kinondoniSpaces.map((marker) => Marker(
+                              point: marker.point,
+                              width: marker.width,
+                              height: marker.height,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_isMapReady) {
+                                    _mapController.move(marker.point, 15.0);
+                                  }
+                                },
+                                child: marker.child,
+                              ),
+                            )),
+                        ...reportMarkers.map((marker) => Marker(
+                              point: marker.point,
+                              width: marker.width,
+                              height: marker.height,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_isMapReady) {
+                                    _mapController.move(marker.point, 15.0);
+                                  }
+                                },
+                                child: marker.child,
+                              ),
+                            )),
+                      ],
+                    ),
+                  ],
+                ),
+
+          // Rest of the Stack (search field, pin drop overlay, action buttons) remains unchanged
           Positioned(
             top: 40,
             left: 20,
             right: 10,
             child: TypeAheadField<LocationSuggestion>(
+              debounceDuration: const Duration(milliseconds: 500),
               builder: (context, controller, focusNode) {
                 return TextField(
                   controller: controller,
@@ -180,95 +294,96 @@ class MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixi
                   ),
                 );
               },
-              suggestionsCallback: (pattern) async => await _locationService.searchLocation(pattern),
+              suggestionsCallback: (pattern) async {
+                if (pattern.length < 3) return [];
+                return await _locationService.searchLocation(pattern);
+              },
               itemBuilder: (context, suggestion) => ListTile(
                 leading: const Icon(Icons.location_on),
                 title: Text(suggestion.name),
               ),
               onSelected: (suggestion) {
                 setState(() => _initialPosition = suggestion.position);
-                _mapController.move(suggestion.position, 15.0);
+                if (_isMapReady) {
+                  _mapController.move(suggestion.position, 15.0);
+                }
               },
             ),
           ),
+
+          if (isDroppingPin)
+            Positioned(
+              top: 20,
+              left: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 50),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  "Tap on map to drop a pin",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+
           Positioned(
             bottom: 20,
             right: 20,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Zoom In Button
                 FloatingActionButton(
                   onPressed: () => zoomIn(_mapController),
                   heroTag: "zoomIn",
-                  mini: true,  // Makes the button smaller
-                  child: const Icon(
-                    Icons.add,
-                    size: 24,  // Adjust icon size
-                  ),
+                  mini: true,
+                  child: const Icon(Icons.add, size: 24),
                 ),
                 const SizedBox(height: 10),
-                
-                // Zoom Out Button
                 FloatingActionButton(
                   onPressed: () => zoomOut(_mapController),
                   heroTag: "zoomOut",
-                  mini: true,  // Makes the button smaller
-                  child: const Icon(
-                    Icons.remove,
-                    size: 20,  // Adjust icon size as per your requirement
-                  ),
+                  mini: true,
+                  child: const Icon(Icons.remove, size: 20),
                 ),
                 const SizedBox(height: 10),
-                
-                // Locate Me Button with Blinking Effect
                 FloatingActionButton(
-                  onPressed: _toggleLocationTracking,  // Toggle location tracking and blinking
+                  onPressed: _toggleLocationTracking,
                   heroTag: "locateMe",
-                  mini: true,  // Makes the button smaller
+                  mini: true,
                   child: AnimatedBuilder(
                     animation: _opacityAnimation,
                     builder: (context, child) {
                       return Opacity(
-                        opacity: _opacityAnimation.value,  // Control blinking via opacity
-                        child: const Icon(
-                          Icons.my_location,
-                          size: 24,  // Adjust icon size if needed
-                        ),
+                        opacity: _isTracking ? _opacityAnimation.value : 1.0,
+                        child: const Icon(Icons.my_location, size: 24),
                       );
                     },
                   ),
                 ),
                 const SizedBox(height: 10),
-                
-                // Report Pin Button
                 FloatingActionButton(
                   onPressed: () => setState(() => isDroppingPin = true),
                   heroTag: "reportPin",
                   backgroundColor: Colors.green,
-                  mini: true,  // Makes the button smaller
-                  child: const Icon(
-                    Icons.report,
-                    size: 24,  // Adjust icon size
-                  ),
+                  mini: true,
+                  child: const Icon(Icons.report, size: 24),
                 ),
                 const SizedBox(height: 10),
-                
-                // Report Current Location Button
                 FloatingActionButton(
                   onPressed: _reportCurrentLocation,
                   heroTag: "reportCurrent",
                   backgroundColor: const Color(0xFFFF9800),
-                  mini: true,  // Makes the button smaller
-                  child: const Icon(
-                    Icons.location_on,
-                    size: 24,  // Adjust icon size
-                  ),
+                  mini: true,
+                  child: const Icon(Icons.location_on, size: 24),
                 ),
               ],
             ),
-          )
-
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -276,7 +391,6 @@ class MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixi
         onTap: (index) {
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/map');
               break;
             case 1:
               Navigator.pushReplacementNamed(context, '/report');

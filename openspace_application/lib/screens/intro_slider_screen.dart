@@ -21,11 +21,12 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-advance from SplashScreen after 3 seconds
     if (_currentPage == 0) {
       Future.delayed(const Duration(seconds: 3), () {
-        if (mounted && _currentPage == 0) {
+        if (mounted && _pageController.hasClients && _currentPage == 0) {
           _nextPage();
+        } else {
+          print("Skipped auto-advance: Widget unmounted or controller detached");
         }
       });
     }
@@ -44,6 +45,10 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
   }
 
   void _nextPage() {
+    if (!mounted ||!_pageController.hasClients) {
+     print("Cannot proceed: Widget unmounted or controller detached");
+      return;
+    }
     if (_currentPage < 2) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -53,6 +58,10 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
   }
 
   void _previousPage() {
+    if (!mounted ||!_pageController.hasClients){
+     print("Cannot proceed: Widget unmounted or controller detached");
+      return;
+    } 
     if (_currentPage > 0) {
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
