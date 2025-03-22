@@ -74,6 +74,7 @@ class MapScreenState extends State<MapScreen> with SingleTickerProviderStateMixi
     _mapController.dispose();
     super.dispose();
   }
+  
 
   Future<void> _getUserLocation() async {
     setState(() => _isLoading = true);
