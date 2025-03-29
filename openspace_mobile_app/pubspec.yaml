@@ -45,6 +45,7 @@ dependencies:
   location: ^8.0.0
   geolocator: ^13.0.3
   flutter_map_marker_popup_plus: ^7.1.0
+  quickalert: ^1.1.0
 
 
 dev_dependencies:

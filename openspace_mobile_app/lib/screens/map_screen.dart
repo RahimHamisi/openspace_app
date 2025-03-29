@@ -446,6 +446,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor:  Color.fromARGB(255, 192, 195, 195),
         currentIndex: 0,
         onTap: (index) {
           switch (index) {
