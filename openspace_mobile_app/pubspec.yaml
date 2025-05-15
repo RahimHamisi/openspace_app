@@ -43,7 +43,7 @@ dependencies:
   smooth_page_indicator: ^1.2.1
   flutter_map_cancellable_tile_provider: ^3.1.0
   location: ^8.0.0
-  geolocator: ^13.0.3
+  geolocator: ^14.0.0
   flutter_map_marker_popup_plus: ^7.1.0
   quickalert: ^1.1.0
 
@@ -75,6 +75,10 @@ flutter:
      - assets/images/facebook.png
      - assets/images/search.png
      - assets/images/bibi.png
+     - assets/images/openspace.jpg
+     - assets/images/openspace_detail.jpg
+     - assets/images/report1.jpg
+     - assets/images/track_progress.jpg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
