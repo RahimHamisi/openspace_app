@@ -62,8 +62,8 @@ class _SidebarState extends State<Sidebar> {
 
                   }),
                   const SizedBox(height: 16),
-                  _buildMenuItem(Icons.contact_mail, 'Contact Us', () {
-                    Navigator.pushReplacementNamed(context, '/contact-page');
+                  _buildMenuItem(Icons.contact_mail, 'Helps and FAQs', () {
+                    Navigator.pushReplacementNamed(context, '/help-support');
 
                   }),
                   const SizedBox(height: 16),
@@ -72,8 +72,8 @@ class _SidebarState extends State<Sidebar> {
 
                   }),
                   const SizedBox(height: 16),
-                  _buildMenuItem(Icons.help_outline, 'Helps & FAQs', () {
-                    Navigator.pushReplacementNamed(context, '/help&faqs');
+                  _buildMenuItem(Icons.help_outline, 'Terms and Condition', () {
+                    Navigator.pushReplacementNamed(context, '/terms');
 
                   }),
                   const SizedBox(height: 16),

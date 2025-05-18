@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:openspace_mobile_app/providers/locale_provider.dart';
 import 'package:openspace_mobile_app/providers/theme_provider.dart';
+import 'package:openspace_mobile_app/screens/helps_and_Faqs.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
 import 'package:openspace_mobile_app/l10n/l10n.dart';
+import 'package:openspace_mobile_app/screens/terms_and_conditions.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
 import 'utils/theme.dart';
@@ -64,6 +66,8 @@ class MyApp extends StatelessWidget {
               '/setting': (context) => const SettingsPage(),
               '/language-change': (context) => const LanguageChangePage(),
               '/change-theme': (context) => const ThemeChangePage(),
+              '/help-support': (context) =>  HelpPage(),
+              '/terms': (context) => TermsAndConditionsPage(),
             },
           );
         },
