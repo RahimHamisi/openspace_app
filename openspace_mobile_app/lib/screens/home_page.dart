@@ -1,51 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:openspace_mobile_app/screens/side_bar.dart';
+import 'package:openspace_mobile_app/utils/constants.dart';
+// import 'package:openspace_mobile_app/screens/sidebar.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  bool _isSidebarOpen = false;
+
   final List<_CardData> _cards = const [
-    _CardData(iconPath: 'assets/images/report1.jpg', title: 'Report unusual activity', route: '/report'),
-    _CardData(iconPath: 'assets/images/report1.jpg', title: 'Reported Issues', route: '/issues'),
-    _CardData(iconPath: 'assets/images/track_progress.jpg', title: 'Track progress', route: '/track'),
+    _CardData(iconPath: 'assets/images/report1.jpg', title: 'Report unusual activity', route: '/report-issue'),
+    _CardData(iconPath: 'assets/images/report1.jpg', title: 'Reported Issues', route: '/reported-issue'),
+    _CardData(iconPath: 'assets/images/track_progress.jpg', title: 'Track progress', route: '/track-progress'),
     _CardData(iconPath: 'assets/images/openspace.jpg', title: 'Available open spaces', route: '/map'),
     _CardData(iconPath: 'assets/images/openspace_detail.jpg', title: 'Book Open Space', route: '/booking'),
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+  }
+
+  void _toggleSidebar() {
+    setState(() {
+      _isSidebarOpen = !_isSidebarOpen;
+      _isSidebarOpen ? _controller.forward() : _controller.reverse();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: AppConstants.primaryBlue,
         elevation: 3,
-        toolbarHeight: 80,
+        toolbarHeight: 150,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
         title: const Text(
-          'IOpen Space',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+          'Open Space',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppConstants.white),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () {},
+          icon: const Icon(Icons.menu, color: AppConstants.white, size: 30),
+          onPressed: _toggleSidebar,
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.white),
+            icon: const Icon(Icons.notifications_none, color: AppConstants.white , size: 30),
             onPressed: () {},
           ),
         ],
       ),
-      body: Center(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWideScreen = constraints.maxWidth > 600;
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _cards.length,
-              itemBuilder: (context, index) => _buildCard(context, _cards[index]),
-            );
-          },
-        ),
+      body: Stack(
+        children: [
+          Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _cards.length,
+                  itemBuilder: (context, index) => _buildCard(context, _cards[index]),
+                );
+              },
+            ),
+          ),
+          if (_isSidebarOpen)
+            Sidebar(controller: _controller, onClose: _toggleSidebar), // Sidebar now full height & half width
+        ],
       ),
     );
   }
@@ -57,8 +89,8 @@ class HomePage extends StatelessWidget {
         onTap: () => Navigator.pushNamed(context, card.route),
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(
-          width: 200, // Adjust width here
-          height: 150, // Adjust height here
+          width: 200,
+          height: 150,
           child: Card(
             elevation: 6,
             shadowColor: Colors.black.withOpacity(0.3),
@@ -77,8 +109,7 @@ class HomePage extends StatelessWidget {
               ],
             ),
           ),
-        )
-
+        ),
       ),
     );
   }

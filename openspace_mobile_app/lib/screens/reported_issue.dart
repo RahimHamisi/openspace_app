@@ -38,50 +38,99 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
             ),
           ),
           if (_reportedIssues.length > itemsPerPage) _buildPaginationControls(),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/report-issue'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                textStyle: const TextStyle(fontSize: 16),
+              ),
+              child: const Text('Add Report'),
+            ),
+          ),
         ],
       ),
     );
   }
 
+
   Widget _buildIssueCard(BuildContext context, _IssueData issue) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8), // Reduced space between cards
+      padding: const EdgeInsets.only(bottom: 8),
       child: SizedBox(
-        height: 100, // ✅ Fix: Reduced card height for a more compact view
+        height: 140, // Adjust card size as needed
         child: InkWell(
           onTap: () => Navigator.pushNamed(context, issue.route),
-          borderRadius: BorderRadius.circular(12), // Slightly smaller border radius
+          borderRadius: BorderRadius.circular(12),
           child: Card(
             elevation: 4,
             shadowColor: Colors.black.withOpacity(0.2),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(issue.iconPath, width: 40, height: 40),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(issue.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                        Text(issue.description, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                        Text(issue.location, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                      ],
-                    ),
+                  Row(
+                    children: [
+                      Image.asset(issue.iconPath, width: 40, height: 40),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                             Text(issue.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                             Text(issue.description, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                             // Text(issue.Status ? '✅ Solved' : '⏳ Pending', style: const TextStyle(color: Colors.white, fontSize: 14)),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const SizedBox(height: 10),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.asset(
+                                        'assets/images/location.jpg',
+                                        height: 20,
+                                        width: 20,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(issue.location, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    const SizedBox(height: 10),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.asset(
+                                        'assets/images/calendar2.jpg',
+                                        height: 30,
+                                        width:30,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    // const Icon(Icons.calendar_today, size: 16, color: Colors.blue),
+                                    const SizedBox(width: 10),
+                                    Text(issue.dateReported, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                              ],
+                            ),
+
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: issue.isSolved ? Colors.green : Colors.red,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      issue.isSolved ? '✅ Solved' : '⏳ Pending',
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ),
+
+
                 ],
               ),
             ),
@@ -90,6 +139,8 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
       ),
     );
   }
+
+
 
   Widget _buildPaginationControls() {
     return Padding(
@@ -106,6 +157,7 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
             icon: const Icon(Icons.arrow_forward_ios),
             onPressed: (currentPage + 1) * itemsPerPage < _reportedIssues.length ? () => setState(() => currentPage++) : null,
           ),
+
         ],
       ),
     );
@@ -117,7 +169,7 @@ class _IssueData {
   final String title;
   final String description;
   final String dateReported;
-  final bool isSolved;
+  final String Status;
   final String location;
   final String route;
 
@@ -126,20 +178,20 @@ class _IssueData {
     required this.title,
     required this.description,
     required this.dateReported,
-    required this.isSolved,
+    required this.Status,
     required this.location,
     required this.route,
   });
 }
 
 final List<_IssueData> _reportedIssues = [
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Broken Bench in Park', description: 'Wooden bench damaged', dateReported: '2 days ago', isSolved: false, location: 'Central Park', route: '/issue_detail'),
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Flooded Pathway', description: 'Water overflowed due to rain', dateReported: '5 days ago', isSolved: true, location: 'Riverside Walkway', route: '/issue_detail'),
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Damaged Streetlight', description: 'Light pole fallen', dateReported: '1 week ago', isSolved: false, location: 'Downtown Square', route: '/issue_detail'),
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Broken Bench in Park', description: 'Wooden bench damaged', dateReported: '2 days ago', isSolved: false, location: 'Central Park', route: '/issue_detail'),
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Flooded Pathway', description: 'Water overflowed due to rain', dateReported: '5 days ago', isSolved: true, location: 'Riverside Walkway', route: '/issue_detail'),
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Damaged Streetlight', description: 'Light pole fallen', dateReported: '1 week ago', isSolved: false, location: 'Downtown Square', route: '/issue_detail'),
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Broken Bench in Park', description: 'Wooden bench damaged', dateReported: '2 days ago', isSolved: false, location: 'Central Park', route: '/issue_detail'),
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Flooded Pathway', description: 'Water overflowed due to rain', dateReported: '5 days ago', isSolved: true, location: 'Riverside Walkway', route: '/issue_detail'),
-  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Damaged Streetlight', description: 'Light pole fallen', dateReported: '1 week ago', isSolved: false, location: 'Downtown Square', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Broken Bench in Park', description: 'Wooden bench damaged', dateReported: '2 days ago',  Status: 'solved', location: 'Central Park', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Flooded Pathway', description: 'Water overflowed due to rain', dateReported: '5 days ago', Status: 'solved', location: 'Riverside Walkway', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Damaged Streetlight', description: 'Light pole fallen', dateReported: '1 week ago',  Status: 'solved', location: 'Downtown Square', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Broken Bench in Park', description: 'Wooden bench damaged', dateReported: '2 days ago',  Status: 'solved', location: 'Central Park', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Flooded Pathway', description: 'Water overflowed due to rain', dateReported: '5 days ago',   Status: 'solved', location: 'Riverside Walkway', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Damaged Streetlight', description: 'Light pole fallen', dateReported: '1 week ago',  Status: 'solved', location: 'Downtown Square', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Broken Bench in Park', description: 'Wooden bench damaged', dateReported: '2 days ago', Status: 'solved', location: 'Central Park', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Flooded Pathway', description: 'Water overflowed due to rain', dateReported: '5 days ago', Status: 'solved', location: 'Riverside Walkway', route: '/issue_detail'),
+  _IssueData(iconPath: 'assets/images/report1.jpg', title: 'Damaged Streetlight', description: 'Light pole fallen', dateReported: '1 week ago', Status: 'solved', location: 'Downtown Square', route: '/issue_detail'),
 ];
