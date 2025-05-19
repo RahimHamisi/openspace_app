@@ -5,6 +5,7 @@ import 'package:openspace_mobile_app/providers/theme_provider.dart';
 import 'package:openspace_mobile_app/screens/helps_and_Faqs.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
 import 'package:openspace_mobile_app/l10n/l10n.dart';
+import 'package:openspace_mobile_app/screens/openspace.dart';
 import 'package:openspace_mobile_app/screens/terms_and_conditions.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
@@ -68,6 +69,7 @@ class MyApp extends StatelessWidget {
               '/change-theme': (context) => const ThemeChangePage(),
               '/help-support': (context) =>  HelpPage(),
               '/terms': (context) => TermsAndConditionsPage(),
+              '/open': (context) =>const  OpenSpacePage(),
             },
           );
         },
