@@ -13,9 +13,9 @@ class UserProfilePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.blue,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacementNamed(context, '/home'); // Ensure '/home' is defined in routes
           },
         ),
         title: const Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:openspace_mobile_app/screens/home_page.dart';
 import 'package:quickalert/quickalert.dart';
 import 'map_screen.dart';
 import 'sign_up.dart';
@@ -47,7 +48,7 @@ class _SignInScreenState extends State<SignInScreen> {
       Future.delayed(const Duration(seconds: 2), () {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MapScreen()),
+          MaterialPageRoute(builder: (context) => const HomePage()),
         );
       });
     } else {

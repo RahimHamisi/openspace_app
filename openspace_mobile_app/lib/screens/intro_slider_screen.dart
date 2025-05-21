@@ -77,7 +77,7 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
         MaterialPageRoute(builder: (context) => const SignUpScreen()),
       );
     } else {
-      Navigator.pushReplacementNamed(context, '/map');
+      Navigator.pushReplacementNamed(context, '/home');
     }
   }
 

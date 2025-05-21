@@ -2,12 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
 
 class HelpPage extends StatelessWidget {
+  const HelpPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor, // Unified background
       appBar: AppBar(
-        title: const Text("Help with OSA"),
+        title: const Text("Help with OSA",style: TextStyle(color: AppConstants.white),),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/home'); // Ensure '/home' is defined in routes
+          },
+        ),
         backgroundColor: AppConstants.primaryBlue,
         elevation: 2,
       ),
@@ -66,7 +75,7 @@ class FAQItem extends StatefulWidget {
   final String question;
   final String answer;
 
-  const FAQItem(this.question, this.answer);
+  const FAQItem(this.question, this.answer, {super.key});
 
   @override
   _FAQItemState createState() => _FAQItemState();

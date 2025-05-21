@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import '../utils/constants.dart';
 import 'issue_details_screen.dart';
 
 class UserDetailsScreen extends StatefulWidget {
@@ -109,25 +110,25 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> with SingleTicker
                                     controller: _phoneController,
                                     decoration: InputDecoration(
                                       labelText: "Phone Number (Optional)",
-                                      labelStyle: TextStyle(color: Colors.grey[600]),
+                                      labelStyle: TextStyle(color: AppConstants.inputdecoration),
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                       filled: true,
-                                      fillColor: Colors.grey[100],
-                                      prefixIcon: Icon(Icons.phone, color: Colors.blue[700]),
+                                      fillColor: AppConstants.greyish,
+                                      prefixIcon: Icon(Icons.phone, color: AppConstants.primaryBlue),
                                     ),
                                     keyboardType: TextInputType.phone,
-                                    style: const TextStyle(color: Colors.black87),
+                                    style: const TextStyle(color: AppConstants.black),
                                   ),
                                   const SizedBox(height: 15),
                                   Card(
-                                    color: Colors.grey[100],
+                                    color: AppConstants.greyish,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     child: ListTile(
-                                      leading: Icon(Icons.location_on, color: Colors.blue[700]),
-                                      title: Text(widget.areaName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                                      leading: Icon(Icons.location_on, color: AppConstants.primaryBlue),
+                                      title: Text(widget.areaName, style: const TextStyle(fontWeight: FontWeight.bold, color: AppConstants.black)),
                                       subtitle: Text(
                                         "${widget.location.latitude.toStringAsFixed(4)}, ${widget.location.longitude.toStringAsFixed(4)}",
-                                        style: TextStyle(color: Colors.grey[600]),
+                                        style: TextStyle(color: AppConstants.grey),
                                       ),
                                       enabled: false,
                                     ),
@@ -150,11 +151,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> with SingleTicker
                                         );
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue[700],
+                                        backgroundColor: AppConstants.primaryBlue,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                                       ),
-                                      child: const Text("Next", style: TextStyle(color: Colors.white, fontSize: 16)),
+                                      child: const Text("Next", style: TextStyle(color: AppConstants.white, fontSize: 16)),
                                     ),
                                   ),
                                 ],

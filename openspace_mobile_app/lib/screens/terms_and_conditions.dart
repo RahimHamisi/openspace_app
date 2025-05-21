@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:openspace_mobile_app/utils/constants.dart';
 
 class TermsAndConditionsPage extends StatelessWidget {
+  const TermsAndConditionsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100], // Subtle background
       appBar: AppBar(
-        title: const Text("Terms & Conditions"),
-        backgroundColor: Colors.blue,
+        title: const Text("Terms & Conditions",style:TextStyle(color: AppConstants.white)),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppConstants.white),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/home'); // Ensure '/home' is defined in routes
+          },
+        ),
+        backgroundColor: AppConstants.primaryBlue,
         elevation: 2,
       ),
       body: SingleChildScrollView(

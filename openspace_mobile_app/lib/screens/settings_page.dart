@@ -14,9 +14,9 @@ class SettingsPage extends StatelessWidget {
         title: const Text("Settings"),
         centerTitle: true,// Removed dynamic translation
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,color: AppConstants.white,),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacementNamed(context, '/home'); // Ensure '/home' is defined in routes
           },
         ),
         backgroundColor: AppConstants.primaryBlue,
