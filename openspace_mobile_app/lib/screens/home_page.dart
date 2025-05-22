@@ -11,7 +11,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
   bool _isSidebarOpen = false;
 
   final List<_CardData> _cards = const [
@@ -25,18 +24,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
+
   }
 
-  void _toggleSidebar() {
-    setState(() {
-      _isSidebarOpen = !_isSidebarOpen;
-      _isSidebarOpen ? _controller.forward() : _controller.reverse();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +41,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppConstants.white),
         ),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppConstants.white, size: 30),
-          onPressed: _toggleSidebar,
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu, color: AppConstants.white, size: 30),
+              onPressed:Scaffold.of(context).openDrawer
+            );
+          }
         ),
         actions: [
           IconButton(
@@ -62,6 +56,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
         ],
       ),
+      drawer: const Sidebar(),
       body: Stack(
         children: [
           Center(
@@ -75,12 +70,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               },
             ),
           ),
-          if (_isSidebarOpen)
-            Sidebar(controller: _controller, onClose: _toggleSidebar), // Sidebar now full height & half width
+           // Sidebar now full height & half width
         ],
       ),
     );
   }
+  Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.blue, size: 28),
+      title: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+      onTap: onTap,
+    );
+  }
+
 
   Widget _buildCard(BuildContext context, _CardData card) {
     return Padding(

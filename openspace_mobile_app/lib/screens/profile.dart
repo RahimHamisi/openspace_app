@@ -95,46 +95,23 @@ class UserProfilePage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 20),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
+                        },
 
-              // Buttons with Animated Popup Calls
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
-                      },
-                      child: const Text('Edit Profile'),
+                        child: const Text('Edit Profile'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _showPopup(
-                          context,
-                          title: "Logout Confirmation",
-                          message: "Are you sure you want to log out?",
-                          buttonText: "Logout",
-                          icon: Icons.exit_to_app, // Fix: Using IconData
-                          iconColor: Colors.red,
-                          onConfirm: () {
-                            // Navigate to SignInScreen after logout
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (context) => const SignInScreen()),
-                                  (route) => false, // Removes previous screens
-                            );
-                          },
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      child: const Icon(Icons.exit_to_app, color: Colors.white, size: 24), // Button shows only icon
-                    ),
-                  ),
-                ],
+                    SizedBox(width: 10),
+                  ],
+                ),
               ),
             ],
           ),
