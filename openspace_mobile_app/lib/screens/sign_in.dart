@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
 import 'package:quickalert/quickalert.dart';
-import 'map_screen.dart';
 import 'sign_up.dart';
 
 class SignInScreen extends StatefulWidget {

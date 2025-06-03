@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
-  <component name="FacetManager">
-    <facet type="android-gradle" name="Android-Gradle">
-      <configuration>
-        <option name="LAST_SUCCESSFUL_SYNC_AGP_VERSION" />
-        <option name="LAST_KNOWN_AGP_VERSION" />
-      </configuration>
-    </facet>
-  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_linux/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_linux/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_linux/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/example/build" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/build" />
@@ -23,39 +30,6 @@
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/path_provider_linux/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/path_provider_linux/example/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/path_provider_linux/example/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_linux/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_linux/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_linux/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_windows/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_windows/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_windows/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/example/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/example/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/example/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/example/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/example/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/file_selector_linux/example/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/build" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/example/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/example/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/image_picker_linux/example/build" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/shared_preferences_linux/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/shared_preferences_linux/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/linux/flutter/ephemeral/.plugin_symlinks/shared_preferences_linux/build" />
@@ -68,12 +42,30 @@
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/file_selector_windows/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/file_selector_windows/example/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/file_selector_windows/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_windows/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/flutter_keyboard_visibility_windows/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/geolocator_windows/example/build" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/image_picker_windows/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/image_picker_windows/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/image_picker_windows/build" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/image_picker_windows/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/image_picker_windows/example/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/image_picker_windows/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/objectbox_flutter_libs/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/build" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/build" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/openspace_mobile_app/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/build" />
