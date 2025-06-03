@@ -11,6 +11,7 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -101,22 +102,14 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            // Email Input
                             TextFormField(
-                              controller: _emailController,
+                              controller: _usernameController,
                               decoration: InputDecoration(
-                                labelText: 'Email address',
-                                hintText: 'Enter your email',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
+                                labelText: 'Username',
+                                hintText: 'Enter your username',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your email';
-                                }
-                                return null;
-                              },
+                              validator: (value) => value == null || value.isEmpty ? 'Username is required' : null,
                             ),
                             const SizedBox(height: 16),
                             // Password Input
