@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
+import 'package:openspace_mobile_app/screens/sign_up.dart';
 import 'package:quickalert/quickalert.dart';
-import 'sign_up.dart';
+
+import '../service/auth_service.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -11,9 +13,8 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -35,24 +36,37 @@ class _SignInScreenState extends State<SignInScreen> {
         _isLoading = true;
       });
 
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      _showAlert(QuickAlertType.success, "Successfully Logged In!");
-
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+      try {
+        final authService = AuthService();
+        final response = await authService.login(
+          _usernameController.text.trim(),
+          _passwordController.text.trim(),
         );
-      });
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response != null && response['success'] == true) {
+          _showAlert(QuickAlertType.success, "Successfully Logged In!");
+
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          });
+        } else {
+          _showAlert(QuickAlertType.error, response?['message'] ?? "Login failed.");
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showAlert(QuickAlertType.error, "Login error: ${e.toString()}");
+      }
     } else {
-      _showAlert(QuickAlertType.error, "Invalid credentials. Please try again.");
+      _showAlert(QuickAlertType.error, "Invalid credentials.");
     }
   }
 
@@ -63,17 +77,13 @@ class _SignInScreenState extends State<SignInScreen> {
         builder: (context, constraints) {
           return SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Card(
                     elevation: 8.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: Form(
@@ -81,26 +91,12 @@ class _SignInScreenState extends State<SignInScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.asset(
-                              'assets/images/bibi.png',
-                              height: 75,
-                            ),
+                            Image.asset('assets/images/bibi.png', height: 75),
                             const SizedBox(height: 16),
-                            const Text(
-                              'Welcome back',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            const Text('Welcome back', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
-                            const Text(
-                              'Please Enter your Credentials to sign in',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey,
-                              ),
-                            ),
+                            const Text('Please enter your credentials to sign in',
+                                style: TextStyle(fontSize: 16, color: Colors.grey)),
                             const SizedBox(height: 24),
                             TextFormField(
                               controller: _usernameController,
@@ -109,25 +105,19 @@ class _SignInScreenState extends State<SignInScreen> {
                                 hintText: 'Enter your username',
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
                               ),
-                              validator: (value) => value == null || value.isEmpty ? 'Username is required' : null,
+                              validator: (value) =>
+                              value == null || value.isEmpty ? 'Username is required' : null,
                             ),
                             const SizedBox(height: 16),
-                            // Password Input
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
                               decoration: InputDecoration(
                                 labelText: 'Password',
                                 hintText: '********',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
                                 suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                  ),
+                                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
                                   onPressed: () {
                                     setState(() {
                                       _obscurePassword = !_obscurePassword;
@@ -135,12 +125,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                   },
                                 ),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your password';
-                                }
-                                return null;
-                              },
+                              validator: (value) =>
+                              value == null || value.isEmpty ? 'Please enter your password' : null,
                             ),
                             const SizedBox(height: 16),
                             Row(
@@ -161,34 +147,23 @@ class _SignInScreenState extends State<SignInScreen> {
                                 ),
                                 TextButton(
                                   onPressed: () {},
-                                  child: const Text(
-                                    'Forgot password?',
-                                    style: TextStyle(color: Colors.purple),
-                                  ),
+                                  child: const Text('Forgot password?', style: TextStyle(color: Colors.purple)),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            // Sign-In Button
                             SizedBox(
                               width: double.infinity,
                               child: _isLoading
-                                  ? const Center(
-                                child: CircularProgressIndicator(),
-                              )
+                                  ? const Center(child: CircularProgressIndicator())
                                   : ElevatedButton(
                                 onPressed: _signIn,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                  Color.fromARGB(255, 40, 69, 231),
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 16),
+                                  backgroundColor: const Color.fromARGB(255, 40, 69, 231),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
                                 ),
-                                child: const Text(
-                                  'Sign in',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16),
-                                ),
+                                child: const Text('Sign in',
+                                    style: TextStyle(color: Colors.white, fontSize: 16)),
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -196,15 +171,11 @@ class _SignInScreenState extends State<SignInScreen> {
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const SignUpScreen(),
-                                  ),
+                                  MaterialPageRoute(builder: (context) => const SignUpScreen()),
                                 );
                               },
-                              child: const Text(
-                                "Don't have an account? Create account",
-                                style: TextStyle(color: Colors.grey),
-                              ),
+                              child: const Text("Don't have an account? Create account",
+                                  style: TextStyle(color: Colors.grey)),
                             ),
                           ],
                         ),

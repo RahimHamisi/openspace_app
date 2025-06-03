@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
             ],
             initialRoute: '/',
             routes: {
-              '/': (context) => const IntroSliderScreen(),
+              '/intro': (context) => const IntroSliderScreen(),
               '/home': (context) => const HomePage(),
               '/login': (context) => const SignInScreen(),
               '/register': (context) => const SignInScreen(),
@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
               '/track-progress': (context) => const TrackProgressScreen(),
               '/user-profile': (context) => UserProfilePage(),
               '/edit-profile': (context) => EditProfilePage(),
-              '/map': (context) => const MapScreen(),
+              '/': (context) => const MapScreen(),
               '/reported-issue': (context) => const ReportedIssuesPage(),
               '/setting': (context) => const SettingsPage(),
               '/language-change': (context) => const LanguageChangePage(),

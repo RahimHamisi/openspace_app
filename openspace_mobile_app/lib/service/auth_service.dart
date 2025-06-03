@@ -1,3 +1,4 @@
+import 'package:graphql_flutter/graphql_flutter.dart';
 import '../api/graphql/auth_mutation.dart';
 import '../api/graphql/graphql_service.dart';
 import '../model/user_model.dart';
@@ -28,7 +29,7 @@ class AuthService {
     );
 
     if (result.hasException) {
-      throw Exception("Registration failed: \${result.exception.toString()}");
+      throw Exception("Registration failed: ${result.exception.toString()}");
     }
 
     final data = result.data!["registerUser"];
@@ -36,7 +37,8 @@ class AuthService {
 
     if (output == null || output["success"] == false) {
       print(output);
-      throw Exception(output != null ? output["message"] : "Registration failed.");
+      throw Exception(
+          output != null ? output["message"] : "Registration failed.");
     }
 
     final user = output["user"] ?? data["user"];
@@ -48,4 +50,26 @@ class AuthService {
 
     return User.fromRegisterJson(user);
   }
+
+  Future<Map<String, dynamic>?> login(String username, String password) async {
+    final result = await _graphQLService.mutate(
+      loginMutation,
+      variables: {
+        "input": {
+          "username": username,
+          "password": password,
+        },
+      },
+    );
+
+    if (result.hasException) {
+      throw Exception("Login failed: ${result.exception.toString()}");
+    }
+
+    final output = result.data?['loginUser']?['output'];
+    print(output);
+    return output;
+  }
+
 }
+
