@@ -12,6 +12,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   bool _isSidebarOpen = false;
+  int _selectedIndex = 0;
+
 
   final List<_CardData> _cards = const [
     _CardData(iconPath: 'assets/images/report1.jpg', title: 'Report unusual activity', route: '/report-issue'),
@@ -73,6 +75,42 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
            // Sidebar now full height & half width
         ],
       ),
+      bottomNavigationBar: BottomNavigationBar(
+      backgroundColor: Colors.blue,
+      currentIndex: _selectedIndex, // Track this in your state
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.white70,
+      onTap: (index) {
+        if (index == _selectedIndex) return; // Already on this page
+
+        switch (index) {
+          case 0:
+            Navigator.pushReplacementNamed(context, '/home');
+            break;
+          case 1:
+            Navigator.pushReplacementNamed(context, '/map');
+            break;
+          case 2:
+            Navigator.pushReplacementNamed(context, '/user-profile');
+            break;
+        }
+      },
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.explore),
+          label: 'Explore',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Profile',
+        ),
+      ],
+    ),
+
     );
   }
   Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {

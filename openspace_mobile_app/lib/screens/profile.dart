@@ -7,6 +7,10 @@ import 'package:openspace_mobile_app/screens/sign_in.dart';
 class UserProfilePage extends StatelessWidget {
   const UserProfilePage({super.key});
 
+  final int _selectedIndex = 2;
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,6 +121,42 @@ class UserProfilePage extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.blue,
+        currentIndex: _selectedIndex, // Track this in your state
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        onTap: (index) {
+          if (index == _selectedIndex) return; // Already on this page
+
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/map');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore),
+            label: 'Explore',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+
     );
   }
 

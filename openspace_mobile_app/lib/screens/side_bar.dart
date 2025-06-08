@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/constants.dart';
+
 class Sidebar extends StatelessWidget {
   const Sidebar({super.key});
 
@@ -10,7 +12,7 @@ class Sidebar extends StatelessWidget {
         width: MediaQuery.of(context).size.width * 0.7, // 70% of screen width
         height: MediaQuery.of(context).size.height, // Full height
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppConstants.white,
           boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(2, 4))],
         ),
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
@@ -52,7 +54,7 @@ class Sidebar extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildMenuItem(Icons.help_outline, 'Terms and Condition', () {
                     Navigator.pushReplacementNamed(context, '/terms');
-                  }),
+                 }),
                   const SizedBox(height: 16),
                   _buildMenuItem(Icons.exit_to_app, 'Sign Out', () {
                     Navigator.pushReplacementNamed(context, '/login');

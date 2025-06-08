@@ -1,20 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:quickalert/quickalert.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
+import '../widget/faqs.dart';
 
-class HelpPage extends StatelessWidget {
+class HelpPage extends StatefulWidget {
   const HelpPage({super.key});
+
+  @override
+  State<HelpPage> createState() => _HelpPageState();
+}
+
+class _HelpPageState extends State<HelpPage> {
+  bool _showContactForm = false;
+
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _messageController = TextEditingController();
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor, // Unified background
+      backgroundColor: AppConstants.lightGrey,
       appBar: AppBar(
-        title: const Text("Help with OSA",style: TextStyle(color: AppConstants.white),),
+        title: const Text("Help with OSA", style: TextStyle(color: AppConstants.white)),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pushReplacementNamed(context, '/home'); // Ensure '/home' is defined in routes
+            Navigator.pushReplacementNamed(context, '/home');
           },
         ),
         backgroundColor: AppConstants.primaryBlue,
@@ -36,17 +54,77 @@ class HelpPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  _showContactForm = !_showContactForm;
+                });
+              },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppConstants.primaryBlue,
+                backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              child: const Text('Contact Support'),
+              child: Text(_showContactForm ? 'Hide Form' : 'Contact Support'),
             ),
+
+            // Contact Form
+            if (_showContactForm) ...[
+              const SizedBox(height: 20),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Your Message", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _messageController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: 'Type your issue or question here...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your message';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          QuickAlert.show(
+                            context: context,
+                            type: QuickAlertType.success,
+                            title: 'Message Sent!',
+                            text: 'Your message has been successfully sent to support.',
+                            confirmBtnColor: Colors.blue,
+                          );
+
+                          setState(() {
+                            _showContactForm = false;
+                            _messageController.clear();
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text('Send'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 30),
             const Text(
               'FAQs',
@@ -56,73 +134,16 @@ class HelpPage extends StatelessWidget {
             FAQItem("How do I reset my password?", "Go to settings and tap 'Reset Password'."),
             FAQItem("Where can I find my reports?", "Reports are available in 'My Reports' section."),
             FAQItem("Can I change my email?", "Yes, go to account settings and update your email."),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
             const Center(
               child: Text(
-                "© 2023 President Manager Corp",
+                "© 2025  KINONDONI MUNICIPAL ",
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-// Animating FAQ Expansion
-class FAQItem extends StatefulWidget {
-  final String question;
-  final String answer;
-
-  const FAQItem(this.question, this.answer, {super.key});
-
-  @override
-  _FAQItemState createState() => _FAQItemState();
-}
-
-class _FAQItemState extends State<FAQItem> {
-  bool _isExpanded = false;
-
-  void _toggleExpansion() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: _toggleExpansion,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(widget.question, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Icon(_isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
-              ],
-            ),
-          ),
-        ),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: _isExpanded
-              ? Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text(widget.answer, style: const TextStyle(fontSize: 16)),
-          )
-              : const SizedBox.shrink(),
-        ),
-        const SizedBox(height: 10),
-      ],
     );
   }
 }

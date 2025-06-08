@@ -104,7 +104,6 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
             right: 0,
             child: Column(
               children: [
-                // SmoothPageIndicator for showing current page
                 SmoothPageIndicator(
                   controller: _pageController,
                   count: 3,
@@ -131,7 +130,6 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Back button (hidden on the first page)
                       _currentPage > 0
                           ? TextButton(
                               onPressed: _previousPage,
@@ -141,7 +139,6 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
                               ),
                             )
                           : const SizedBox(width: 60),
-                      // Next button (hidden on the last page)
                       _currentPage < 2
                           ? ElevatedButton(
                               onPressed: _nextPage,

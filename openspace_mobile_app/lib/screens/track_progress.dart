@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/constants.dart';
+
 class TrackProgressScreen extends StatefulWidget {
   const TrackProgressScreen({super.key});
 
@@ -34,7 +36,7 @@ class _TrackProgressScreenState extends State<TrackProgressScreen> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Track Progress'),
+        title: const Text('Track Progress',style: TextStyle(color: AppConstants.white),),
         centerTitle: true,
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
       ),

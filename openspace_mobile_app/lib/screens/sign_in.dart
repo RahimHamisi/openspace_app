@@ -4,6 +4,7 @@ import 'package:openspace_mobile_app/screens/sign_up.dart';
 import 'package:quickalert/quickalert.dart';
 
 import '../service/auth_service.dart';
+import '../utils/constants.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -96,7 +97,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             const Text('Welcome back', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
                             const Text('Please enter your credentials to sign in',
-                                style: TextStyle(fontSize: 16, color: Colors.grey)),
+                                style: TextStyle(fontSize: 16, color: AppConstants.grey)),
                             const SizedBox(height: 24),
                             TextFormField(
                               controller: _usernameController,

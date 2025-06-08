@@ -4,15 +4,19 @@ class OpenSpaceMarker {
   final String id;
   final String name;
   final String district;
-  final bool isAvailable;
-  final LatLng point;
+  final double latitude;
+  final double longitude;
+  final bool isActive;
+  final String status;
 
   OpenSpaceMarker({
     required this.id,
     required this.name,
     required this.district,
-    required this.isAvailable,
-    required this.point,
+    required this.latitude,
+    required this.longitude,
+    required this.isActive,
+    required this.status,
   });
 
   factory OpenSpaceMarker.fromJson(Map<String, dynamic> json) {
@@ -20,11 +24,10 @@ class OpenSpaceMarker {
       id: json['id'],
       name: json['name'],
       district: json['district'],
-      isAvailable: json['status'] == 'Available',
-      point: LatLng(
-        double.parse(json['latitude'].toString()),
-        double.parse(json['longitude'].toString()),
-      ),
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
+      isActive: json['isActive'],
+      status: json['status'],
     );
   }
 }

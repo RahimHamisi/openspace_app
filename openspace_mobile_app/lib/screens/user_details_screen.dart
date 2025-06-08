@@ -110,10 +110,10 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> with SingleTicker
                                     controller: _phoneController,
                                     decoration: InputDecoration(
                                       labelText: "Phone Number (Optional)",
-                                      labelStyle: TextStyle(color: AppConstants.inputdecoration),
+                                      labelStyle: TextStyle(color: AppConstants.grey),
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                       filled: true,
-                                      fillColor: AppConstants.greyish,
+                                      fillColor: AppConstants.grey,
                                       prefixIcon: Icon(Icons.phone, color: AppConstants.primaryBlue),
                                     ),
                                     keyboardType: TextInputType.phone,
@@ -121,7 +121,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> with SingleTicker
                                   ),
                                   const SizedBox(height: 15),
                                   Card(
-                                    color: AppConstants.greyish,
+                                    color: AppConstants.grey,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     child: ListTile(
                                       leading: Icon(Icons.location_on, color: AppConstants.primaryBlue),
