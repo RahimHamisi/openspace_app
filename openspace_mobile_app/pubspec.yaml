@@ -46,6 +46,7 @@ dependencies:
   flutter_map_marker_popup_plus: ^7.1.0
   quickalert: ^1.1.0
   image_picker: ^1.1.2
+  file_picker: ^10.1.9
   shared_preferences: ^2.5.3
   http: ^1.4.0
   graphql_flutter: ^5.2.0

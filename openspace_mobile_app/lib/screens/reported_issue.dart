@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../service/openspace_service.dart';
+
 class ReportedIssuesPage extends StatefulWidget {
   const ReportedIssuesPage({super.key});
 
@@ -10,6 +12,10 @@ class ReportedIssuesPage extends StatefulWidget {
 class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
   final int itemsPerPage = 5;
   int currentPage = 0;
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<_IssueData> _allFetchedIssues = [];
+  late final OpenSpaceService _openSpaceService;
 
   @override
   Widget build(BuildContext context) {

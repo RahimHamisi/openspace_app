@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
-import 'dart:collection'; // For LRU cache
+import 'dart:collection';
 
 class LocationService {
   static const String _nominatimBaseUrl = 'https://nominatim.openstreetmap.org';
@@ -30,7 +30,9 @@ class LocationService {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) return false;
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever)
+        return false;
     }
     return true;
   }
@@ -58,7 +60,7 @@ class LocationService {
       _lastLocationTime = DateTime.now();
       return _lastKnownLocation;
     } catch (e) {
-      // print('Error fetching user location: $e');
+      print('Error fetching user location: $e');
       return null;
     }
   }
@@ -102,19 +104,23 @@ class LocationService {
               final lon = double.tryParse(item['lon']?.toString() ?? '');
               final displayName = item['display_name']?.toString();
               if (lat != null && lon != null && displayName != null) {
-                return LocationSuggestion(name: displayName, position: LatLng(lat, lon));
+                return LocationSuggestion(
+                  name: displayName,
+                  position: LatLng(lat, lon),
+                );
               }
               return null;
             })
             .whereType<LocationSuggestion>()
             .toList();
       } else {
-        // print('Search failed with status: ${response.statusCode}');
+        print('Search failed with status: ${response.statusCode}');
+        return [];
       }
     } catch (e) {
-      // print('Error searching location: $e');
+      print('Error searching location: $e');
+      return [];
     }
-    return [];
   }
 
   Future<String?> getAreaName(LatLng position) async {
@@ -144,10 +150,12 @@ class LocationService {
           return displayName;
         }
       } else {
-        // print('Reverse geocoding failed with status: ${response.statusCode}');
+        print(
+          'Reverse geocoding failed with status: ${response.statusCode}',
+        );
       }
     } catch (e) {
-      // print('Error reverse geocoding: $e');
+      print('Error reverse geocoding: $e');
     }
     return null;
   }

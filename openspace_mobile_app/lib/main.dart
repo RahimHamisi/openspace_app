@@ -1,4 +1,7 @@
+
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:openspace_mobile_app/api/graphql/graphql_service.dart';
 import 'package:openspace_mobile_app/providers/locale_provider.dart';
 import 'package:openspace_mobile_app/providers/theme_provider.dart';
 import 'package:openspace_mobile_app/screens/helps_and_Faqs.dart';
@@ -21,51 +24,57 @@ import 'screens/language_choice.dart';
 import 'screens/theme_change.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await requestNotificationPermission();
-  runApp(const MyApp());
+    WidgetsFlutterBinding.ensureInitialized();
+    await initHiveForFlutter(); // Required for GraphQL caching
+    await requestNotificationPermission();
+    runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+    const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
+    @override
+    Widget build(BuildContext context) {
+      final client = GraphQLService().client;
+      return MultiProvider(
+        providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
-      ],
-      child: Consumer2<ThemeProvider, LocaleProvider>(
-        builder: (context, themeProvider, localeProvider, child) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Smart GIS App',
-            theme: AppTheme.lightTheme,
-            darkTheme:AppTheme.darkTheme,
-            themeMode: themeProvider.themeMode,
-            initialRoute: '/',
-            routes: {
-              '/': (context) => const IntroSliderScreen(),
-              '/home': (context) => const HomePage(),
-              '/login': (context) => const SignInScreen(),
-              '/register': (context) => const SignInScreen(),
-              '/report-issue': (context) => const ReportIssuePage(),
-              '/track-progress': (context) => const TrackProgressScreen(),
-              '/user-profile': (context) => UserProfilePage(),
-              '/edit-profile': (context) => EditProfilePage(),
-              '/map': (context) => const MapScreen(),
-              '/reported-issue': (context) => const ReportedIssuesPage(),
-              '/setting': (context) => const SettingsPage(),
-              '/language-change': (context) => const LanguageChangePage(),
-              '/change-theme': (context) => const ThemeChangePage(),
-              '/help-support': (context) =>  HelpPage(),
-              '/terms': (context) => TermsAndConditionsPage(),
-              '/open': (context) =>const  OpenSpacePage(),
-            },
-          );
-        },
-      ),
-    );
-  }
+        Provider<ValueNotifier<GraphQLClient>>(create: (_) => ValueNotifier(client)),
+        ],
+          child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, _) {
+            return GraphQLProvider(
+              client: ValueNotifier(client),
+              child: MaterialApp(
+                debugShowCheckedModeBanner: false,
+                title: 'Smart GIS App',
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: themeProvider.themeMode,
+                initialRoute: '/',
+                routes: {
+                '/jhh': (context) => const IntroSliderScreen(),
+                '/home': (context) => const HomePage(),
+                '/login': (context) => const SignInScreen(),
+                '/register': (context) => const SignInScreen(),
+                '/report-issue': (context) => const ReportIssuePage(),
+                '/track-progress': (context) => const TrackProgressScreen(),
+                '/user-profile': (context) => UserProfilePage(),
+                '/edit-profile': (context) => EditProfilePage(),
+                '/': (context) =>const MapScreen(),
+                '/reported-issue': (context) => const ReportedIssuesPage(),
+                '/setting': (context) => const SettingsPage(),
+                '/language-change': (context) => const LanguageChangePage(),
+                '/change-theme': (context) => const ThemeChangePage(),
+                '/help-support': (context) => const HelpPage(),
+                '/terms': (context) => const TermsAndConditionsPage(),
+                '/open': (context) => const OpenSpacePage(),
+                },
+              ),
+            );
+          },
+        ),
+      );
+    }
 }
