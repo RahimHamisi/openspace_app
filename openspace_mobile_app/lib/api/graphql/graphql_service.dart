@@ -4,7 +4,7 @@ class GraphQLService {
   late GraphQLClient client;
 
   GraphQLService() {
-    final httpLink = HttpLink('http://127.0.0.1:8000/graphql/');
+    final httpLink = HttpLink('http://192.168.0.112:8000/graphql/');
 
     client = GraphQLClient(
       cache: GraphQLCache(),
