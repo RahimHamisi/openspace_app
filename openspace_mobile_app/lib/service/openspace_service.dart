@@ -4,7 +4,6 @@ import '../api/graphql/graphql_service.dart';
 import '../api/graphql/openspace_query.dart';
 import '../model/Report.dart';
 
-
 class OpenSpaceService {
   final GraphQLService _graphQLService = GraphQLService();
 
@@ -98,8 +97,6 @@ class OpenSpaceService {
     }
   }
 
-  // In OpenSpaceService class
-
   Future<List<Report>> getAllReports() async {
     const String getAllReportsQuery = """
       query MyQuery {
@@ -112,49 +109,135 @@ class OpenSpaceService {
           reportId
           spaceName
           file
+        
         }
       }
     """;
     final Duration _queryTimeout = const Duration(seconds: 30);
 
     try {
-      final result = await _graphQLService.query(
-        getAllReportsQuery,
-      ).timeout(_queryTimeout);
+      final result = await _graphQLService
+          .query(getAllReportsQuery)
+          .timeout(_queryTimeout);
 
       if (result.hasException) {
         final exception = result.exception!;
         if (exception.linkException != null) {
           final linkExString = exception.linkException.toString().toLowerCase();
-          if (linkExString.contains('timeout') || linkExString.contains('timed out')) {
+          if (linkExString.contains('timeout') ||
+              linkExString.contains('timed out')) {
             throw Exception("Fetching reports timed out. Please try again.");
-          } else if (linkExString.contains('socketexception') || linkExString.contains('httpexception') || linkExString.contains('failed host lookup')) {
-            throw Exception("Network issue fetching reports. Check your connection.");
+          } else if (linkExString.contains('socketexception') ||
+              linkExString.contains('httpexception') ||
+              linkExString.contains('failed host lookup')) {
+            throw Exception(
+              "Network issue fetching reports. Check your connection.",
+            );
           }
           throw Exception("A network error occurred while fetching reports.");
         }
         if (exception.graphqlErrors.isNotEmpty) {
-          throw Exception("Error from server: ${exception.graphqlErrors.first.message}");
+          throw Exception(
+            "Error from server: ${exception.graphqlErrors.first.message}",
+          );
         }
-        throw Exception("Failed to fetch reports due to an unexpected server error.");
+        throw Exception(
+          "Failed to fetch reports due to an unexpected server error.",
+        );
       }
 
       if (result.data == null || result.data!['allReports'] == null) {
-        // No reports found or unexpected response structure
-        return []; // Return empty list
+        return [];
       }
 
-      final List<dynamic> reportsData = result.data!['allReports'] as List<dynamic>;
-      return reportsData.map((data) => Report.fromJson(data as Map<String, dynamic>)).toList();
-
+      final List<dynamic> reportsData =
+          result.data!['allReports'] as List<dynamic>;
+      return reportsData
+          .map((data) => Report.fromJson(data as Map<String, dynamic>))
+          .toList();
     } on TimeoutException catch (_) {
       throw Exception("Fetching reports timed out. Please try again.");
     } catch (e) {
-      String errorMessage = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
-      if (errorMessage.contains("timed out") || errorMessage.contains("Network issue") || errorMessage.contains("Error from server")) {
+      String errorMessage = e.toString().replaceFirst(
+        RegExp(r'^Exception:\s*'),
+        '',
+      );
+      if (errorMessage.contains("timed out") ||
+          errorMessage.contains("Network issue") ||
+          errorMessage.contains("Error from server")) {
         throw Exception(errorMessage);
       }
-      throw Exception("An error occurred while fetching reports: $errorMessage");
+      throw Exception(
+        "An error occurred while fetching reports: $errorMessage",
+      );
+    }
+  }
+
+  Future<Report?> getReportById(String reportId) async {
+    const String getReportByIdQuery = """
+      query GetReportById(\$reportId: String!) {
+        reportById(reportId: \$reportId) {
+          id
+          description
+          createdAt
+          latitude
+          longitude
+          reportId
+          spaceName
+          file
+          type
+          status
+        }
+      }
+    """;
+    final Duration _queryTimeout = const Duration(seconds: 30);
+
+    try {
+      final result = await _graphQLService
+          .query(getReportByIdQuery, variables: {'reportId': reportId})
+          .timeout(_queryTimeout);
+
+      if (result.hasException) {
+        final exception = result.exception!;
+        if (exception.linkException != null) {
+          final linkExString = exception.linkException.toString().toLowerCase();
+          if (linkExString.contains('timeout') ||
+              linkExString.contains('timed out')) {
+            throw Exception("Fetching report timed out. Please try again.");
+          } else if (linkExString.contains('socketexception') ||
+              linkExString.contains('httpexception') ||
+              linkExString.contains('failed host lookup')) {
+            throw Exception(
+              "Network issue fetching report. Check your connection.",
+            );
+          }
+          throw Exception("A network error occurred while fetching report.");
+        }
+        if (exception.graphqlErrors.isNotEmpty) {
+          throw Exception(
+            "Error from server: ${exception.graphqlErrors.first.message}",
+          );
+        }
+        throw Exception(
+          "Failed to fetch report due to an unexpected server error.",
+        );
+      }
+
+      if (result.data == null || result.data!['reportById'] == null) {
+        return null;
+      }
+
+      return Report.fromJson(
+        result.data!['reportById'] as Map<String, dynamic>,
+      );
+    } on TimeoutException catch (_) {
+      throw Exception("Fetching report timed out. Please try again.");
+    } catch (e) {
+      String errorMessage = e.toString().replaceFirst(
+        RegExp(r'^Exception:\s*'),
+        '',
+      );
+      throw Exception(errorMessage);
     }
   }
 }
