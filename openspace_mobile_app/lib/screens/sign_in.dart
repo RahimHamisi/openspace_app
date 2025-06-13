@@ -21,15 +21,22 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _obscurePassword = true;
   bool _rememberMe = false;
 
-  void _showAlert(QuickAlertType type, String message) {
+  void _showAlert(QuickAlertType type, String message, {VoidCallback? onConfirmed}) {
     QuickAlert.show(
       context: context,
       type: type,
       text: message,
-      autoCloseDuration: const Duration(seconds: 2),
-      showConfirmBtn: false,
+      showConfirmBtn: true,
+      confirmBtnText: 'OK',
+      onConfirmBtnTap: () {
+        Navigator.of(context).pop(); // Close the alert manually
+        if (onConfirmed != null) {
+          onConfirmed(); // Custom behavior after confirmation
+        }
+      },
     );
   }
+
 
   void _signIn() async {
     if (_formKey.currentState!.validate()) {
@@ -49,7 +56,9 @@ class _SignInScreenState extends State<SignInScreen> {
         });
 
         if (response != null && response['success'] == true) {
-          _showAlert(QuickAlertType.success, "Successfully Logged In!");
+          _showAlert(
+              QuickAlertType.success,
+              "Successfully Logged In!");
 
           Future.delayed(const Duration(seconds: 2), () {
             Navigator.pushReplacement(

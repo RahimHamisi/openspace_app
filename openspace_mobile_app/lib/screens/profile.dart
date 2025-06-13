@@ -1,172 +1,228 @@
 import 'package:flutter/material.dart';
+import 'package:openspace_mobile_app/utils/constants.dart';
 import 'package:openspace_mobile_app/screens/edit_profile.dart';
 import 'package:openspace_mobile_app/screens/pop_card.dart';
 import 'package:openspace_mobile_app/screens/reported_issue.dart';
-import 'package:openspace_mobile_app/screens/sign_in.dart';
 
-class UserProfilePage extends StatelessWidget {
+import '../service/ProfileService.dart';
+import 'bookings.dart';
+
+
+class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
 
-  final int _selectedIndex = 2;
+  @override
+  _UserProfilePageState createState() => _UserProfilePageState();
+}
 
+class _UserProfilePageState extends State<UserProfilePage> {
+  Map<String, dynamic>? _profile;
+  bool _isLoading = true;
+  String? _error;
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    setState(() => _isLoading = true);
+    try {
+      final profile = await ProfileService.fetchProfile();
+      setState(() {
+        _profile = profile;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to load profile: $e';
+        _isLoading = false;
+      });
+      if (e.toString().contains('No authentication token')) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: AppConstants.primaryBlue,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pushReplacementNamed(context, '/home'); // Ensure '/home' is defined in routes
-          },
+          icon: const Icon(Icons.arrow_back, color: AppConstants.white),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
         title: const Text(
           'Profile',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppConstants.white,
+          ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: AppConstants.white),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfilePage())),
+          ),
+        ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // Profile Card
-              Card(
-                elevation: 6,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          // Profile picture upload logic
-                        },
-                        child: Stack(
-                          alignment: Alignment.bottomRight,
-                          children: [
-                            const CircleAvatar(
-                              radius: 50,
-                              backgroundImage: AssetImage('assets/images/avatar.jpg'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text('Your Name', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 10),
-                      const Text('your.email@example.com', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                      const SizedBox(height: 10),
-                      const Text('(+255) 123-456-789', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Clickable Reports Card
-              MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportedIssuesPage()));
-                  },
-                  child: Card(
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              'assets/images/report1.jpg',
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const Text('MY REPORTS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? Center(child: Text(_error!))
+          : SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.only(bottom: 24),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
                   children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
-                        },
-
-                        child: const Text('Edit Profile'),
-                      ),
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundImage: _profile?['photoUrl'] != null
+                          ? NetworkImage(_profile!['photoUrl'])
+                          : const AssetImage('assets/images/avatar.jpg') as ImageProvider,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(height: 16),
+                    Text(
+                      _profile?['name'] ?? 'Unknown',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _profile?['email'] ?? 'No email',
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.star, color: Colors.yellow, size: 16),
+                        SizedBox(width: 4),
+                        Text('Verified', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      ],
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'GENERAL',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppConstants.primaryBlue),
+            ),
+            const SizedBox(height: 16),
+            _buildSettingsItem(
+              context,
+              icon: Icons.settings,
+              title: 'Profile Settings',
+              subtitle: 'Update and modify your profile',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfilePage())),
+            ),
+            _buildSettingsItem(
+              context,
+              icon: Icons.lock,
+              title: 'Privacy',
+              subtitle: 'Change your password',
+              onTap: () {
+                _showPopup(context, title: 'Privacy', message: 'Password change feature coming soon!', buttonText: 'OK', icon: Icons.lock, iconColor: Colors.blue, onConfirm: () => Navigator.pop(context));
+              },
+            ),
+            _buildSettingsItem(
+              context,
+              icon: Icons.notifications,
+              title: 'Notifications',
+              subtitle: 'Change your notification settings',
+              onTap: () {
+                _showPopup(context, title: 'Notifications', message: 'Notification settings coming soon!', buttonText: 'OK', icon: Icons.notifications, iconColor: Colors.blue, onConfirm: () => Navigator.pop(context));
+              },
+            ),
+            _buildSettingsItem(
+              context,
+              icon: Icons.report,
+              title: 'My Reports',
+              subtitle: 'View and manage your reports',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportedIssuesPage())),
+            ),
+            _buildSettingsItem(
+              context,
+              icon: Icons.event,
+              title: 'My Bookings',
+              subtitle: 'View and manage your bookings',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BookingsPage())),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.blue,
-        currentIndex: _selectedIndex, // Track this in your state
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
+        backgroundColor: AppConstants.primaryBlue,
+        currentIndex: 4,
+        selectedItemColor: AppConstants.white,
+        unselectedItemColor: AppConstants.white,
         onTap: (index) {
-          if (index == _selectedIndex) return; // Already on this page
-
           switch (index) {
             case 0:
               Navigator.pushReplacementNamed(context, '/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/map');
+              Navigator.pushReplacementNamed(context, '/expenses');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/profile');
+              Navigator.pushReplacementNamed(context, '/add');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/wallet');
+              break;
+            case 4:
               break;
           }
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'Expenses'),
+          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add'),
+          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: 'Wallet'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
-
     );
   }
 
-  // Function to Show Animated Popup
+  Widget _buildSettingsItem(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: CircleAvatar(
+          radius: 20,
+          backgroundColor: AppConstants.primaryBlue.withOpacity(0.1),
+          child: Icon(icon, color: AppConstants.primaryBlue, size: 20),
+        ),
+        title: Text(title, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+        subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+        trailing: const Icon(Icons.chevron_right, color: AppConstants.grey),
+        onTap: onTap,
+      ),
+    );
+  }
+
   void _showPopup(
       BuildContext context, {
         required String title,
         required String message,
         required String buttonText,
-        required IconData icon, // Fix: Using IconData
+        required IconData icon,
         required Color iconColor,
         required VoidCallback onConfirm,
       }) {
@@ -177,7 +233,7 @@ class UserProfilePage extends StatelessWidget {
           title: title,
           message: message,
           buttonText: buttonText,
-          icon: icon, // Fix: Correct parameter passing
+          icon: icon,
           iconColor: iconColor,
           onConfirm: onConfirm,
         );

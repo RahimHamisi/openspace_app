@@ -1,10 +1,13 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../api/graphql/auth_mutation.dart';
 import '../api/graphql/graphql_service.dart';
 import '../model/user_model.dart';
 
 class AuthService {
   final GraphQLService _graphQLService = GraphQLService();
+
+  static const String _tokenKey = 'auth_token';
 
   Future<User> register({
     required String username,
@@ -51,6 +54,7 @@ class AuthService {
     return User.fromRegisterJson(user);
   }
 
+  /// Logs in a user, stores the authentication token, and returns the output map.
   Future<Map<String, dynamic>?> login(String username, String password) async {
     final result = await _graphQLService.mutate(
       loginMutation,
@@ -67,9 +71,36 @@ class AuthService {
     }
 
     final output = result.data?['loginUser']?['output'];
-    print(output);
-    return output;
+    print('Login response: $output'); // Debug log to verify response structure
+
+    if (output == null || output['success'] != true) {
+      throw Exception(output?['message'] ?? "Login failed, no success response.");
+    }
+
+    // Extract and store the token if present
+    final token = output['token'] as String?; // Adjust 'token' key based on API response
+    if (token != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_tokenKey, token);
+    } else {
+      print('Warning: No token found in login response');
+    }
+
+    return output; // Return the original output map for compatibility
   }
 
+  /// Retrieves the stored authentication token.
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  /// Removes the stored authentication token (logout).
+  static Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+  }
 }
+
+
 

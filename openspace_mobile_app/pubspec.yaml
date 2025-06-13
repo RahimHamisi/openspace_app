@@ -54,6 +54,7 @@ dependencies:
   permission_handler: ^12.0.0+1
   url_launcher:
   intl:
+  flutter_animate:
 
 
 
