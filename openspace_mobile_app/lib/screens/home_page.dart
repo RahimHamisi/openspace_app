@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _CardData(iconPath: 'assets/images/report1.jpg', title: 'Reported Issues', route: '/reported-issue'),
     _CardData(iconPath: 'assets/images/track_progress.jpg', title: 'Track progress', route: '/track-progress'),
     _CardData(iconPath: 'assets/images/openspace.jpg', title: 'Available open spaces', route: '/open'),
-    _CardData(iconPath: 'assets/images/openspace_detail.jpg', title: 'Book Open Space', route: '/booking'),
+    _CardData(iconPath: 'assets/images/openspace_detail.jpg', title: 'Book Open Space', route: '/book-openspace'),
   ];
 
   @override

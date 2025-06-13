@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 enum BookingType { single, group }
 
@@ -71,10 +73,18 @@ class _BookingPageState extends State<BookingPage> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Process the booking data
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking submitted successfully!')),
-      );
+      Future.delayed(const Duration(seconds: 1), () {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          title: 'Open Space Booked successful!',
+          confirmBtnText: 'OK',
+          onConfirmBtnTap: () {
+            Navigator.of(context).pop(); // Close the popup
+            Navigator.pop(context);     // Optionally close the edit page
+          },
+        );
+      });
     }
   }
 
