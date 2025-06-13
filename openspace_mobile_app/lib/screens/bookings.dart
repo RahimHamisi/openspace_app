@@ -112,19 +112,19 @@ class _BookingCard extends StatefulWidget {
 
 class __BookingCardState extends State<_BookingCard> {
   String? _availabilityStatus;
-  bool _isChecking = false;
+  String? _reservationStatus;
+  bool _isCheckingAvailability = false;
+  bool _isCheckingReservation = false;
 
   // Mock availability check
   void _checkAvailability() {
     setState(() {
-      _isChecking = true;
+      _isCheckingAvailability = true;
     });
-    // Simulate network delay
     Future.delayed(const Duration(seconds: 1), () {
       final statuses = ['CONFIRMED', 'PENDING', 'UNAVAILABLE'];
       setState(() {
-        _isChecking = false;
-        // Mock logic: Past bookings are UNAVAILABLE, future are random
+        _isCheckingAvailability = false;
         final startDate = DateTime.parse(widget.booking['startDate']);
         _availabilityStatus = startDate.isBefore(DateTime.now())
             ? 'UNAVAILABLE'
@@ -133,13 +133,48 @@ class __BookingCardState extends State<_BookingCard> {
     });
   }
 
+  // Mock reservation check
+  void _checkReservation() {
+    setState(() {
+      _isCheckingReservation = true;
+    });
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        _isCheckingReservation = false;
+        final startDate = DateTime.parse(widget.booking['startDate']);
+        final isSingle = widget.booking['type'] == 'SINGLE';
+        final hasRequiredFields = isSingle
+            ? (widget.booking['name']?.isNotEmpty ?? false) &&
+            (widget.booking['phone']?.isNotEmpty ?? false) &&
+            (widget.booking['email']?.isNotEmpty ?? false)
+            : (widget.booking['groupName']?.isNotEmpty ?? false) &&
+            (widget.booking['numberOfPeople'] != null) &&
+            (widget.booking['contactPerson']?.isNotEmpty ?? false) &&
+            (widget.booking['contactPhone']?.isNotEmpty ?? false) &&
+            (widget.booking['contactEmail']?.isNotEmpty ?? false);
+        if (startDate.isBefore(DateTime.now())) {
+          _reservationStatus = 'EXPIRED';
+        } else if (hasRequiredFields &&
+            (widget.booking['location']?.isNotEmpty ?? false) &&
+            (widget.booking['activities']?.isNotEmpty ?? false)) {
+          _reservationStatus = 'VALID';
+        } else {
+          _reservationStatus = 'INVALID';
+        }
+      });
+    });
+  }
+
   Color _getStatusColor(String? status) {
     switch (status) {
       case 'CONFIRMED':
+      case 'VALID':
         return Colors.green;
       case 'PENDING':
         return Colors.orange;
       case 'UNAVAILABLE':
+      case 'INVALID':
+      case 'EXPIRED':
         return Colors.red;
       default:
         return AppConstants.grey;
@@ -225,8 +260,8 @@ class __BookingCardState extends State<_BookingCard> {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: _isChecking ? null : _checkAvailability,
-                          child: _isChecking
+                          onPressed: _isCheckingAvailability ? null : _checkAvailability,
+                          child: _isCheckingAvailability
                               ? const SizedBox(
                             width: 16,
                             height: 16,
@@ -239,6 +274,27 @@ class __BookingCardState extends State<_BookingCard> {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _isCheckingReservation ? null : _checkReservation,
+                          child: _isCheckingReservation
+                              ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppConstants.white,
+                            ),
+                          )
+                              : const Text('Check Reservation'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: [
                       if (_availabilityStatus != null)
                         Chip(
                           label: Text(
@@ -246,6 +302,14 @@ class __BookingCardState extends State<_BookingCard> {
                             style: const TextStyle(color: AppConstants.white),
                           ),
                           backgroundColor: _getStatusColor(_availabilityStatus),
+                        ),
+                      if (_reservationStatus != null)
+                        Chip(
+                          label: Text(
+                            _reservationStatus!,
+                            style: const TextStyle(color: AppConstants.white),
+                          ),
+                          backgroundColor: _getStatusColor(_reservationStatus),
                         ),
                     ],
                   ),

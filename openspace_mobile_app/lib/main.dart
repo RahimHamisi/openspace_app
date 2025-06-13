@@ -5,6 +5,7 @@ import 'package:openspace_mobile_app/api/graphql/graphql_service.dart';
 import 'package:openspace_mobile_app/providers/locale_provider.dart';
 import 'package:openspace_mobile_app/providers/theme_provider.dart';
 import 'package:openspace_mobile_app/screens/book_openspace.dart';
+import 'package:openspace_mobile_app/screens/bookings.dart';
 import 'package:openspace_mobile_app/screens/helps_and_Faqs.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
 import 'package:openspace_mobile_app/screens/openspace.dart';
@@ -70,7 +71,8 @@ class MyApp extends StatelessWidget {
                 '/change-theme': (context) => const ThemeChangePage(),
                 '/help-support': (context) => const HelpPage(),
                 '/terms': (context) => const TermsAndConditionsPage(),
-                '/': (context) => const BookingPage(),
+                '/book-openspace': (context) => const BookingPage(),
+                  '/': (context) => const BookingsPage(),
                   '/open': (context) => const OpenSpacePage(),
                 },
               ),
