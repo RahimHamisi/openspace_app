@@ -7,7 +7,7 @@ import '../model/user_model.dart';
 class AuthService {
   final GraphQLService _graphQLService = GraphQLService();
 
-  static const String _tokenKey = 'auth_token';
+  static const String _tokenKey = 'auth_access_token';
 
   Future<User> register({
     required String username,
@@ -67,23 +67,27 @@ class AuthService {
     );
 
     if (result.hasException) {
-      throw Exception("Login failed: ${result.exception.toString()}");
+      throw Exception("Login failed");
     }
 
     final output = result.data?['loginUser']?['output'];
-    print('Login response: $output'); // Debug log to verify response structure
+    print('AuthService Login response output: $output'); // Debug log to verify response structure
 
     if (output == null || output['success'] != true) {
       throw Exception(output?['message'] ?? "Login failed, no success response.");
     }
 
     // Extract and store the token if present
-    final token = output['token'] as String?; // Adjust 'token' key based on API response
-    if (token != null) {
+    final accessToken = output['user']?['accessToken'] as String?;
+    final refreshToken = output['user']?['refreshToken'] as String?;// Adjust 'token' key based on API response
+    if (accessToken != null) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenKey, token);
+      await prefs.setString(_tokenKey, accessToken);
+      print('AuthService: AccessToken stored successfully.');
     } else {
-      print('Warning: No token found in login response');
+      print('AuthService Warning: No accessToken found in login response');
+
+      throw Exception('Login Succesfull, no accessToken found.');
     }
 
     return output; // Return the original output map for compatibility
@@ -92,6 +96,8 @@ class AuthService {
   /// Retrieves the stored authentication token.
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
+    print('AuthService: Retrieving token from SharedPreferences');
+    print('AuthService: Token: ${prefs.getString(_tokenKey)}');
     return prefs.getString(_tokenKey);
   }
 
@@ -99,7 +105,45 @@ class AuthService {
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+    print('AuthService: Token removed (logged out).');
   }
+}
+
+// Mock GraphQLService and QueryResult for compilation
+class _MockGraphQLService {
+  Future<_MockQueryResult> mutate(String query, {Map<String, dynamic>? variables}) async {
+    print("MockGraphQLService: mutate called with query: $query, variables: $variables");
+    // Simulate a successful login response structure
+    if (query.contains("loginUser")) {
+      return _MockQueryResult(
+        data: {
+          "loginUser": {
+            "output": {
+              "message": "Login successful (mock)",
+              "success": true,
+              "user": {
+                "id": "mockUserId",
+                "isStaff": false,
+                "isWardExecutive": false,
+                "refreshToken": "mockRefreshTokenValue",
+                "username": variables?["input"]?["username"] ?? "mockUser",
+                "accessToken": "mockAccessTokenValueFromGraphQL" // This is what we need
+              }
+            }
+          }
+        },
+      );
+    }
+    return _MockQueryResult(data: null, exception: Exception("Unknown mock mutation"));
+  }
+}
+
+class _MockQueryResult {
+  final Map<String, dynamic>? data;
+  final Exception? exception;
+  bool get hasException => exception != null;
+
+  _MockQueryResult({this.data, this.exception});
 }
 
 

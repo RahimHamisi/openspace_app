@@ -20,8 +20,17 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  late final AuthService _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = AuthService();
+  }
+
 
   void _showAlert(QuickAlertType type, String message, {VoidCallback? onConfirmed}) {
+    if (!mounted) return;
     QuickAlert.show(
       context: context,
       type: type,
@@ -40,43 +49,44 @@ class _SignInScreenState extends State<SignInScreen> {
 
   void _signIn() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      setState(() => _isLoading = true);
 
       try {
-        final authService = AuthService();
-        final response = await authService.login(
+        final response = await _authService.login(
           _usernameController.text.trim(),
           _passwordController.text.trim(),
         );
 
-        setState(() {
-          _isLoading = false;
-        });
+        if (!mounted) return;
+        setState(() => _isLoading = false);
 
         if (response != null && response['success'] == true) {
           _showAlert(
               QuickAlertType.success,
-              "Successfully Logged In!");
-
-          Future.delayed(const Duration(seconds: 2), () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-            );
-          });
+              response['message'] ?? "Successfully Logged In!",
+              onConfirmed: () {
+                if (mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomePage()), // Assuming HomePage exists
+                  );
+                }
+              }
+          );
         } else {
-          _showAlert(QuickAlertType.error, response?['message'] ?? "Login failed.");
+          _showAlert(QuickAlertType.error, response?['message'] ?? "Login failed. Please check your credentials.");
         }
       } catch (e) {
-        setState(() {
-          _isLoading = false;
-        });
-        _showAlert(QuickAlertType.error, "Login error: ${e.toString()}");
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        String errorMessage = e.toString();
+        if (errorMessage.startsWith("Exception: ")) {
+          errorMessage = errorMessage.substring("Exception: ".length);
+        }
+        _showAlert(QuickAlertType.error, "Login error: $errorMessage");
       }
     } else {
-      _showAlert(QuickAlertType.error, "Invalid credentials.");
+
     }
   }
 

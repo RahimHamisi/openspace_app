@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'
+    show Diagnosticable;
 import 'package:openspace_mobile_app/utils/constants.dart';
 import 'package:openspace_mobile_app/screens/edit_profile.dart';
 import 'package:openspace_mobile_app/screens/pop_card.dart';
 import 'package:openspace_mobile_app/screens/reported_issue.dart';
-
 import '../service/ProfileService.dart';
 import 'bookings.dart';
 
@@ -27,20 +28,47 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> _fetchProfile() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      final profile = await ProfileService.fetchProfile();
+      final profileData = await ProfileService.fetchProfile();
+      if (!mounted) return;
       setState(() {
-        _profile = profile;
+        _profile = profileData;
         _isLoading = false;
+        _error = null;
       });
     } catch (e) {
+      if (!mounted) return;
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith("Exception: ")) {
+        errorMessage = errorMessage.substring("Exception: ".length);
+      }
       setState(() {
-        _error = 'Failed to load profile: $e';
+        _error = 'Failed to load profile: $errorMessage';
         _isLoading = false;
       });
-      if (e.toString().contains('No authentication token')) {
-        Navigator.pushReplacementNamed(context, '/login');
+
+      if (errorMessage.toLowerCase().contains('authentication') ||
+          errorMessage.toLowerCase().contains('token') ||
+          errorMessage.toLowerCase().contains('unauthorized')) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Session expired or invalid. Please log in again.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          Future.delayed(const Duration(milliseconds: 2100), () {
+            if (mounted) {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+            }
+          });
+        }
       }
     }
   }
@@ -52,7 +80,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
         backgroundColor: AppConstants.primaryBlue,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppConstants.white),
-          onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+          onPressed: () {
+            Navigator.pushReplacementNamed(
+              context,
+              '/home',
+            );
+          },
         ),
         title: const Text(
           'Profile',
@@ -65,170 +98,294 @@ class _UserProfilePageState extends State<UserProfilePage> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh, color: AppConstants.white),
+            onPressed: _isLoading ? null : _fetchProfile,
+          ),
+          IconButton(
             icon: const Icon(Icons.edit, color: AppConstants.white),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfilePage())),
+            onPressed:
+                _isLoading || _error != null
+                    ? null
+                    : () {
+                      if (_profile != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => const EditProfilePage(
+                                  /* pass _profile if needed */
+                                ),
+                          ),
+                        );
+                      }
+                    },
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? Center(child: Text(_error!))
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              margin: const EdgeInsets.only(bottom: 24),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: _profile?['photoUrl'] != null
-                          ? NetworkImage(_profile!['photoUrl'])
-                          : const AssetImage('assets/images/avatar.jpg') as ImageProvider,
+      body: _buildBody(),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _fetchProfile,
+                child: const Text("Retry"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    if (_profile == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "No profile data available.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.orange, fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _fetchProfile,
+                child: const Text("Fetch Profile"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    String name = _profile?['name'] ?? _profile?['username'] ?? 'N/A';
+    String email = _profile?['email'] ?? 'No email provided';
+    String? photoUrl =
+        _profile?['photoUrl'] ??
+        _profile?['profile_picture'] ??
+        _profile?['user']?['profile_picture'];
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.only(bottom: 24),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage:
+                        photoUrl != null && photoUrl.isNotEmpty
+                            ? NetworkImage(photoUrl)
+                            : const AssetImage('assets/images/avatar.jpg')
+                                as ImageProvider, // Ensure avatar.jpg exists
+                    onBackgroundImageError:
+                        photoUrl != null && photoUrl.isNotEmpty
+                            ? (dynamic exception, StackTrace? stackTrace) {
+                              print("Error loading profile image: $exception");
+                            }
+                            : null,
+                    child:
+                        (photoUrl == null || photoUrl.isEmpty)
+                            ? const Icon(Icons.person, size: 50)
+                            : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _profile?['name'] ?? 'Unknown',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _profile?['email'] ?? 'No email',
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 8),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.star, color: Colors.yellow, size: 16),
-                        SizedBox(width: 4),
-                        Text('Verified', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                      ],
-                    ),
-                  ],
-                ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    email,
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'GENERAL',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppConstants.primaryBlue),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'GENERAL',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppConstants.primaryBlue.withOpacity(0.8),
             ),
-            const SizedBox(height: 16),
-            _buildSettingsItem(
-              context,
-              icon: Icons.settings,
-              title: 'Profile Settings',
-              subtitle: 'Update and modify your profile',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfilePage())),
+          ),
+          const SizedBox(height: 10),
+          _buildSettingsItem(
+            context,
+            icon: Icons.settings_outlined,
+            title: 'Profile Settings',
+            subtitle: 'Update and modify your profile',
+            onTap: () {
+              if (_profile != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => const EditProfilePage(
+                        ),
+                  ),
+                );
+              }
+            },
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.lock_outline,
+            title: 'Privacy',
+            subtitle: 'Change your password',
+            onTap: () {
+              _showPopup(
+                context,
+                title: 'Privacy Settings',
+                message: 'Password change feature coming soon!',
+                buttonText: 'Got it!',
+                icon: Icons.lock_outline,
+                iconColor: Colors.blueAccent,
+                onConfirm: () => Navigator.pop(context),
+              );
+            },
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.notifications_outlined,
+            title: 'Notifications',
+            subtitle: 'Manage your notification preferences',
+            onTap: () {
+              _showPopup(
+                context,
+                title: 'Notification Settings',
+                message: 'Notification preferences coming soon!',
+                buttonText: 'Okay',
+                icon: Icons.notifications_outlined,
+                iconColor: Colors.orangeAccent,
+                onConfirm: () => Navigator.pop(context),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'ACTIVITY',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppConstants.primaryBlue.withOpacity(0.8),
             ),
-            _buildSettingsItem(
-              context,
-              icon: Icons.lock,
-              title: 'Privacy',
-              subtitle: 'Change your password',
-              onTap: () {
-                _showPopup(context, title: 'Privacy', message: 'Password change feature coming soon!', buttonText: 'OK', icon: Icons.lock, iconColor: Colors.blue, onConfirm: () => Navigator.pop(context));
-              },
-            ),
-            _buildSettingsItem(
-              context,
-              icon: Icons.notifications,
-              title: 'Notifications',
-              subtitle: 'Change your notification settings',
-              onTap: () {
-                _showPopup(context, title: 'Notifications', message: 'Notification settings coming soon!', buttonText: 'OK', icon: Icons.notifications, iconColor: Colors.blue, onConfirm: () => Navigator.pop(context));
-              },
-            ),
-            _buildSettingsItem(
-              context,
-              icon: Icons.report,
-              title: 'My Reports',
-              subtitle: 'View and manage your reports',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportedIssuesPage())),
-            ),
-            _buildSettingsItem(
-              context,
-              icon: Icons.event,
-              title: 'My Bookings',
-              subtitle: 'View and manage your bookings',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BookingsPage())),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppConstants.primaryBlue,
-        currentIndex: 4,
-        selectedItemColor: AppConstants.white,
-        unselectedItemColor: AppConstants.white,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/expenses');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/add');
-              break;
-            case 3:
-              Navigator.pushReplacementNamed(context, '/wallet');
-              break;
-            case 4:
-              break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'Expenses'),
-          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: 'Wallet'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          ),
+          const SizedBox(height: 10),
+          _buildSettingsItem(
+            context,
+            icon: Icons.report_problem_outlined,
+            title: 'My Reports',
+            subtitle: 'View and manage your reports',
+            onTap:
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ReportedIssuesPage(),
+                  ),
+                ),
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.event_available_outlined,
+            title: 'My Bookings',
+            subtitle: 'View and manage your bookings',
+            onTap:
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BookingsPage()),
+                ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSettingsItem(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
+  Widget _buildSettingsItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
         leading: CircleAvatar(
           radius: 20,
           backgroundColor: AppConstants.primaryBlue.withOpacity(0.1),
-          child: Icon(icon, color: AppConstants.primaryBlue, size: 20),
+          child: Icon(icon, color: AppConstants.primaryBlue, size: 22),
         ),
-        title: Text(title, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-        trailing: const Icon(Icons.chevron_right, color: AppConstants.grey),
+        title: Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: AppConstants.grey.withOpacity(0.7),
+        ),
         onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       ),
     );
   }
 
   void _showPopup(
-      BuildContext context, {
-        required String title,
-        required String message,
-        required String buttonText,
-        required IconData icon,
-        required Color iconColor,
-        required VoidCallback onConfirm,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String message,
+    required String buttonText,
+    required IconData icon,
+    required Color iconColor,
+    required VoidCallback onConfirm,
+  }) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return PopupCard(
           title: title,
           message: message,
@@ -238,6 +395,66 @@ class _UserProfilePageState extends State<UserProfilePage> {
           onConfirm: onConfirm,
         );
       },
+    );
+  }
+
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    int currentIndex = 4;
+    return BottomNavigationBar(
+      backgroundColor: AppConstants.primaryBlue,
+      type:
+          BottomNavigationBarType
+              .fixed,
+      currentIndex: currentIndex,
+      selectedItemColor: AppConstants.white,
+      unselectedItemColor: AppConstants.white.withOpacity(0.7),
+      onTap: (index) {
+        if (index == currentIndex) return;
+        switch (index) {
+          case 0:
+            Navigator.pushReplacementNamed(context, '/home');
+            break;
+          case 1:
+            Navigator.pushReplacementNamed(
+              context,
+              '/expenses',
+            );
+            break;
+          case 2:
+
+            Navigator.pushReplacementNamed(
+              context,
+              '/add',
+            );
+            break;
+          case 3:
+
+            Navigator.pushReplacementNamed(
+              context,
+              '/wallet',
+            );
+            break;
+          case 4:
+            break;
+        }
+      },
+      items: const [
+        // The 'items' parameter is required for BottomNavigationBar
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.list_alt), // Changed to a more generic 'list' icon
+          label: 'Activity', // Changed label
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.add_circle_outline),
+          label: 'New', // Changed label
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.notifications),
+          label: 'Alerts', // Changed label
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+      ],
     );
   }
 }
