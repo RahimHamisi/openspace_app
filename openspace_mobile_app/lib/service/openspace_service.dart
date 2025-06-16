@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
+
 import '../api/graphql/graphql_service.dart';
 import '../api/graphql/openspace_query.dart';
 import '../model/Report.dart';
@@ -53,20 +55,20 @@ class OpenSpaceService {
     String? userId,
   }) async {
     const String createReportMutation = """
-      mutation CreateReport(\$description: String!, \$email: String, \$filePath: String, \$spaceName: String, \$latitude: Float, \$longitude: Float, \$userId: ID) {
-        createReport(description: \$description, email: \$email, filePath: \$filePath, spaceName: \$spaceName, latitude: \$latitude, longitude: \$longitude, userId: \$userId) {
-          report {
-            reportId
-            description
-            email
-            file
-            createdAt
-            latitude
-            longitude
-          }
+    mutation CreateReport(\$description: String!, \$email: String, \$filePath: String, \$spaceName: String, \$latitude: Float, \$longitude: Float, \$userId: ID) {
+      createReport(description: \$description, email: \$email, filePath: \$filePath, spaceName: \$spaceName, latitude: \$latitude, longitude: \$longitude, userId: \$userId) {
+        report {
+          reportId
+          description
+          email
+          file
+          createdAt
+          latitude
+          longitude
         }
       }
-    """;
+    }
+  """;
 
     try {
       final result = await _graphQLService.mutate(
@@ -82,20 +84,45 @@ class OpenSpaceService {
         },
       );
 
+      // 🚨 Log any GraphQL exception but continue if data is usable
       if (result.hasException) {
         final exception = result.exception!;
         if (exception.linkException != null) {
-          throw Exception("Network error");
+          throw Exception("Network error: ${exception.linkException}");
         }
 
-        throw Exception("Failed to create report.");
+        // Print all graphql errors for debugging
+        for (final err in exception.graphqlErrors) {
+          debugPrint("[GraphQL Error] ${err.message}");
+        }
+
+        // Still allow if data is available
+        final data = result.data;
+        if (data != null &&
+            data['createReport'] != null &&
+            data['createReport']['report'] != null &&
+            data['createReport']['report']['reportId'] != null) {
+          debugPrint("Report created despite GraphQL errors.");
+          return data['createReport']['report'] as Map<String, dynamic>;
+        }
+
+        // If no data is returned, treat as failure
+        throw Exception("GraphQL error: ${exception.graphqlErrors.firstOrNull?.message ?? 'Unknown error'}");
       }
 
+      // ✅ Success path
       return result.data?['createReport']['report'] as Map<String, dynamic>?;
     } catch (e) {
-      throw Exception(e.toString().replaceFirst(RegExp(r'^Exception:\s*'), ''));
+      // Log unexpected client-side errors
+      debugPrint("Exception in createReport: $e");
+      throw Exception(
+        e.toString().replaceFirst(RegExp(r'^Exception:\s*'), ''),
+      );
     }
   }
+
+
+
 
   Future<List<Report>> getAllReports() async {
     const String getAllReportsQuery = """

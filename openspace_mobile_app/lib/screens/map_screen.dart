@@ -10,6 +10,7 @@ import '../model/openspace.dart';
 import '../service/openspace_service.dart';
 import '../utils/location_service.dart';
 import '../utils/map_utils.dart';
+import 'book_openspace.dart';
 
 
 
@@ -193,9 +194,37 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   void _bookSpace() {
     if (_selectedSpace != null && _selectedSpace!.isAvailable) {
+      debugPrint('Selected Space ID: ${_selectedSpace!.id}');
+      final int? spaceIdForBooking = int.tryParse(_selectedSpace!.id);
+
+      if (spaceIdForBooking == null || _selectedSpace!.id.isEmpty) {
+        debugPrint('Error: Invalid or empty space ID: ${_selectedSpace!.id}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Error: Selected space has an invalid or empty ID format for booking."),
+          ),
+        );
+        return;
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BookingPage(
+            spaceId: spaceIdForBooking,
+            spaceName: _selectedSpace!.name,
+          ),
+        ),
+      );
+    } else if (_selectedSpace != null && !_selectedSpace!.isAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Booking functionality to be implemented"),
+          content: Text("This space is currently not available for booking."),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No space selected or space details are unavailable."),
         ),
       );
     }

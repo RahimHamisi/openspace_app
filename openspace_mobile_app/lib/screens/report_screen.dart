@@ -53,13 +53,13 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
         widget.latitude != null &&
         widget.longitude != null) {
       _descriptionController.text =
-          "Reporting issue for: ${widget.spaceName}\nLocation: Lat: ${widget.latitude?.toStringAsFixed(5)}, Lon: ${widget.longitude?.toStringAsFixed(5)}\n\nDescription: ";
+      "Reporting issue for: ${widget.spaceName}\nLocation: Lat: ${widget.latitude?.toStringAsFixed(5)}, Lon: ${widget.longitude?.toStringAsFixed(5)}\n\nDescription: ";
     } else if (widget.spaceName != null) {
       _descriptionController.text =
-          "Reporting issue for: ${widget.spaceName}\n\nDescription: ";
+      "Reporting issue for: ${widget.spaceName}\n\nDescription: ";
     } else if (widget.latitude != null && widget.longitude != null) {
       _descriptionController.text =
-          "Reporting issue at Location: Lat: ${widget.latitude?.toStringAsFixed(5)}, Lon: ${widget.longitude?.toStringAsFixed(5)}\n\nDescription: ";
+      "Reporting issue at Location: Lat: ${widget.latitude?.toStringAsFixed(5)}, Lon: ${widget.longitude?.toStringAsFixed(5)}\n\nDescription: ";
     } else {
       _descriptionController.text = "Description: ";
     }
@@ -242,37 +242,37 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
 
       if (errorMessage == null) {
         String? filePathPayload =
-            uploadedFilePaths.isNotEmpty ? uploadedFilePaths.join(',') : null;
+        uploadedFilePaths.isNotEmpty ? uploadedFilePaths.join(',') : null;
         String? email =
-            _emailController.text.trim().isNotEmpty
-                ? _emailController.text.trim()
-                : null;
+        _emailController.text.trim().isNotEmpty
+            ? _emailController.text.trim()
+            : null;
         String? phone =
-            _phoneController.text.trim().isNotEmpty
-                ? _phoneController.text.trim()
-                : null; // Ensure your service handles this
+        _phoneController.text.trim().isNotEmpty
+            ? _phoneController.text.trim()
+            : null; // Ensure your service handles this
 
         final Map<String, dynamic>? reportData = await _openSpaceService
             .createReport(
-              description: _descriptionController.text.trim(),
-              filePath: filePathPayload,
-              spaceName: widget.spaceName,
-              latitude: widget.latitude,
-              longitude: widget.longitude,
-              email: email,
-            );
+          description: _descriptionController.text.trim(),
+          filePath: filePathPayload,
+          spaceName: widget.spaceName,
+          latitude: widget.latitude,
+          longitude: widget.longitude,
+          email: email,
+        );
 
         if (reportData != null && reportData['reportId'] != null) {
           finalReportId = reportData['reportId'].toString();
         } else if (reportData == null && errorMessage == null) {
           // If service returned null without throwing an error we already caught
           errorMessage =
-              "Failed to submit report. Server returned incomplete data.";
+          "Failed to submit report. Server returned incomplete data.";
         }
       }
     } on TimeoutException catch (_) {
       errorMessage =
-          "The operation timed out. Please check your connection and try again.";
+      "The operation timed out. Please check your connection and try again.";
     } catch (e) {
       errorMessage = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
       if (!errorMessage.endsWith('.')) {
@@ -341,7 +341,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       labelText: labelText,
       hintText: hintText,
       prefixIcon:
-          prefixIcon != null ? Icon(prefixIcon, color: Colors.blueGrey) : null,
+      prefixIcon != null ? Icon(prefixIcon, color: Colors.blueGrey) : null,
       filled: true,
       fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(
@@ -397,7 +397,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment:
-                    CrossAxisAlignment.stretch,
+                CrossAxisAlignment.stretch,
                 children: [
                   if (widget.spaceName != null) ...[
                     Text(
@@ -471,10 +471,10 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
                   const SizedBox(height: 12),
                   FileAttachmentSection(
                     selectedFileNames:
-                        _filesToUpload.map((f) => f.name).toList(),
+                    _filesToUpload.map((f) => f.name).toList(),
                     pickImages: _isSubmittingOverall ? null : _pickImages,
                     pickGeneralFiles:
-                        _isSubmittingOverall ? null : _pickGeneralFiles,
+                    _isSubmittingOverall ? null : _pickGeneralFiles,
                     removeFile: _isSubmittingOverall ? null : _removeFile,
                   ),
                   const SizedBox(height: 24),

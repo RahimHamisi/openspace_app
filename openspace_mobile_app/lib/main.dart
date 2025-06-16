@@ -71,7 +71,6 @@ class MyApp extends StatelessWidget {
                 '/change-theme': (context) => const ThemeChangePage(),
                 '/help-support': (context) => const HelpPage(),
                 '/terms': (context) => const TermsAndConditionsPage(),
-                '/book-openspace': (context) => const BookingPage(),
                   '/bookings-list': (context) => const BookingsPage(),
                   '/open': (context) => const OpenSpacePage(),
                 },

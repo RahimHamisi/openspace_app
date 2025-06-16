@@ -54,43 +54,65 @@ class AuthService {
     return User.fromRegisterJson(user);
   }
 
-  /// Logs in a user, stores the authentication token, and returns the output map.
-  Future<Map<String, dynamic>?> login(String username, String password) async {
-    final result = await _graphQLService.mutate(
-      loginMutation,
-      variables: {
-        "input": {
-          "username": username,
-          "password": password,
-        },
-      },
-    );
 
-    if (result.hasException) {
-      throw Exception("Login failed");
+  Future<Map<String, dynamic>?> login(String username, String password, {int retryCount = 3}) async {
+    int attempts = 0;
+    while (attempts < retryCount) {
+      attempts++;
+      try {
+        print('AuthService: Login attempt $attempts/$retryCount for username: $username');
+        final result = await _graphQLService.mutate(
+          loginMutation,
+          variables: {
+            "input": {
+              "username": username,
+              "password": password,
+            },
+          },
+        );
+
+        if (result.hasException) {
+          print('AuthService Login Exception: ${result.exception}');
+          if (result.exception.toString().contains('TimeoutException') && attempts < retryCount) {
+            print('AuthService: Timeout detected, retrying after 2s...');
+            await Future.delayed(Duration(seconds: 2));
+            continue;
+          }
+          throw Exception("Login failed: ${result.exception.toString()}");
+        }
+
+        final output = result.data?['loginUser']?['output'];
+        print('AuthService Login response output: $output');
+
+        if (output == null || output['success'] != true) {
+          throw Exception(output?['message'] ?? "Login failed, no success response.");
+        }
+
+        final accessToken = output['user']?['accessToken'] as String?;
+        final refreshToken = output['user']?['refreshToken'] as String?;
+        if (accessToken != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_tokenKey, accessToken);
+          print('AuthService: AccessToken stored successfully: $accessToken');
+        } else {
+          print('AuthService Warning: No accessToken found in login response');
+          throw Exception('Login successful, no accessToken found.');
+        }
+
+        return output;
+      } catch (e) {
+        print('AuthService Login Error (Attempt $attempts/$retryCount): $e');
+        if (e.toString().contains('TimeoutException') && attempts < retryCount) {
+          await Future.delayed(Duration(seconds: 2));
+          continue;
+        }
+        if (e.toString().contains('SocketException')) {
+          throw Exception('Network error: Please check your internet connection.');
+        }
+        throw Exception('Login failed: $e');
+      }
     }
-
-    final output = result.data?['loginUser']?['output'];
-    print('AuthService Login response output: $output'); // Debug log to verify response structure
-
-    if (output == null || output['success'] != true) {
-      throw Exception(output?['message'] ?? "Login failed, no success response.");
-    }
-
-    // Extract and store the token if present
-    final accessToken = output['user']?['accessToken'] as String?;
-    final refreshToken = output['user']?['refreshToken'] as String?;// Adjust 'token' key based on API response
-    if (accessToken != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenKey, accessToken);
-      print('AuthService: AccessToken stored successfully.');
-    } else {
-      print('AuthService Warning: No accessToken found in login response');
-
-      throw Exception('Login Succesfull, no accessToken found.');
-    }
-
-    return output; // Return the original output map for compatibility
+    throw Exception('Login failed after $retryCount attempts due to timeout.');
   }
 
   /// Retrieves the stored authentication token.

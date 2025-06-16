@@ -26,17 +26,20 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
   }
 
   Future<void> _fetchReports() async {
+    if (!mounted) return; // Avoid calling setState if the widget is disposed
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
       final reports = await _openSpaceService.getAllReports();
+      if (!mounted) return;
       setState(() {
         _allFetchedIssues = reports;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
         _isLoading = false;
@@ -70,73 +73,139 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
         actions: [
           IconButton(
               icon: const Icon(Icons.search, color: Colors.white),
-              onPressed: () {}),
+              onPressed: () {
+                // TODO: Implement search functionality
+                print("Search button pressed");
+              }),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(_errorMessage!,
-                style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _fetchReports,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      )
-          : Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: displayedIssues.length,
-              itemBuilder: (context, index) =>
-                  _buildIssueCard(context, displayedIssues[index]),
-            ),
+      body: _buildBodyContent(displayedIssues),
+    );
+  }
+
+  Widget _buildBodyContent(List<Report> displayedIssues) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _fetchReports,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                child: const Text('Retry', style: TextStyle(color: Colors.white)),
+              ),
+            ],
           ),
-          if (_allFetchedIssues.length > itemsPerPage)
-            _buildPaginationControls(),
-        ],
-      ),
+        ),
+      );
+    }
+
+    if (_allFetchedIssues.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.info_outline, color: Colors.grey, size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'No issues reported yet.',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _fetchReports, // Option to retry fetching
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                child: const Text('Refresh', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Display list and pagination if there are issues
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0), // Adjust padding
+            itemCount: displayedIssues.length,
+            itemBuilder: (context, index) =>
+                _buildIssueCard(context, displayedIssues[index]),
+          ),
+        ),
+        if (_allFetchedIssues.length > itemsPerPage)
+          _buildPaginationControls(),
+      ],
     );
   }
 
   Widget _buildIssueCard(BuildContext context, Report issue) {
-    // Format the createdAt date
-    final formattedDate = DateFormat('yyyy-MM-dd')
-        .format(DateTime.parse(issue.createdAt).toLocal());
+    final formattedDate = DateFormat('yyyy-MM-dd').format(issue.createdAt.toLocal());
+
+    final String imageUrl = (issue.file != null && issue.file!.isNotEmpty)
+        ? issue.file!
+        : 'https://via.placeholder.com/150'; // Fallback placeholder URL
+
+    final bool hasCoordinates = issue.latitude != null && issue.longitude != null;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12), // Increased bottom padding
       child: Card(
-        elevation: 4,
-        shadowColor: Colors.black.withOpacity(0.2),
+        elevation: 3,
+        shadowColor: Colors.black.withOpacity(0.15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        clipBehavior: Clip.antiAlias, // Ensures InkWell ripple stays within card bounds
         child: InkWell(
-          onTap: () => Navigator.pushNamed(context, '/issue_detail',
-              arguments: issue),
-          borderRadius: BorderRadius.circular(12),
+          onTap: () => Navigator.pushNamed(context, '/issue_detail', arguments: issue),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network(
-                  issue.file.isNotEmpty
-                      ? issue.file
-                      : 'https://via.placeholder.com/40',
-                  width: 40,
-                  height: 40,
-                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                    'assets/images/report1.jpg',
-                    width: 40,
-                    height: 40,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.network(
+                    imageUrl,
+                    width: 60,  // Slightly larger image
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                      'assets/images/report1.jpg',
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.0,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -145,67 +214,72 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(issue.spaceName,
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w600)),
-                      Text(issue.description,
-                          style: const TextStyle(
-                              fontSize: 13, color: Colors.grey),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis),
+                      Text(
+                        issue.spaceName ?? 'Unnamed Space',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        issue.description, // Assuming description is non-nullable from your Report model
+                        style: TextStyle(fontSize: 13.5, color: Colors.grey[700]),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: InkWell(
-                                  onTap: () => Navigator.pushNamed(context,'/map',arguments: {
-                                    "latitude" : issue.latitude,
-                                    "longitude" : issue.longitude,
-                                  }),
-                                  child: Image.asset(
+                          Expanded( // Allow this Row to take available space before the date
+                            child: InkWell(
+                              onTap: hasCoordinates
+                                  ? () => Navigator.pushNamed(context, '/map', arguments: {
+                                "latitude": issue.latitude,
+                                "longitude": issue.longitude,
+                              })
+                                  : null,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
                                     'assets/images/location.jpg',
-                                    height: 20,
-                                    width: 20,
+                                    height: 18,
+                                    width: 18,
                                     fit: BoxFit.cover,
+                                    color: hasCoordinates ? Colors.blue : Colors.grey, // Indicate if tappable
                                   ),
-                                ),
+                                  const SizedBox(width: 5),
+                                  Flexible(
+                                    child: Text(
+                                      issue.spaceName ?? 'Location N/A',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: hasCoordinates ? Colors.blue : Colors.grey[600],
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8), // Spacer
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                'assets/images/calendar2.jpg',
+                                height: 18,
+                                width: 18,
+                                fit: BoxFit.cover,
                               ),
                               const SizedBox(width: 5),
-                              InkWell(
-                                  onTap: () => Navigator.pushNamed(context,'/map',arguments: {
-                                    "latitude" : issue.latitude,
-                                    "longitude" : issue.longitude,
-                                  }),
-                                child: Text(
-                                  issue.spaceName,
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.blue),
-                                ),
+                              Text(
+                                formattedDate,
+                                style: TextStyle(fontSize: 13, color: Colors.grey[800]),
                               ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
-                                  'assets/images/calendar2.jpg',
-                                  height: 20,
-                                  width: 20,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(formattedDate,
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                    )),
                             ],
                           ),
                         ],
@@ -222,6 +296,7 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
   }
 
   Widget _buildPaginationControls() {
+    int totalPages = (_allFetchedIssues.length / itemsPerPage).ceil();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -229,15 +304,20 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios),
+            color: Colors.blue,
+            disabledColor: Colors.grey,
             onPressed: currentPage > 0
                 ? () => setState(() => currentPage--)
                 : null,
           ),
           Text(
-              "Page ${currentPage + 1} / ${(_allFetchedIssues.length / itemsPerPage).ceil()}",
-              style: const TextStyle(fontSize: 16)),
+            "Page ${currentPage + 1} of $totalPages",
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
           IconButton(
             icon: const Icon(Icons.arrow_forward_ios),
+            color: Colors.blue,
+            disabledColor: Colors.grey,
             onPressed: (currentPage + 1) * itemsPerPage < _allFetchedIssues.length
                 ? () => setState(() => currentPage++)
                 : null,
@@ -246,6 +326,4 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
       ),
     );
   }
-
-
 }
