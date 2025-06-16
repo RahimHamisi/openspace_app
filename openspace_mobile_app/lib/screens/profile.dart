@@ -185,52 +185,50 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.only(bottom: 24),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage:
-                        photoUrl != null && photoUrl.isNotEmpty
-                            ? NetworkImage(photoUrl)
-                            : const AssetImage('assets/images/avatar.jpg')
-                                as ImageProvider, // Ensure avatar.jpg exists
-                    onBackgroundImageError:
-                        photoUrl != null && photoUrl.isNotEmpty
-                            ? (dynamic exception, StackTrace? stackTrace) {
-                              print("Error loading profile image: $exception");
-                            }
-                            : null,
-                    child:
-                        (photoUrl == null || photoUrl.isEmpty)
-                            ? const Icon(Icons.person, size: 50)
-                            : null,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+          Center(
+            child: Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: const EdgeInsets.only(bottom: 24),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      onBackgroundImageError:
+                          photoUrl != null && photoUrl.isNotEmpty
+                              ? (dynamic exception, StackTrace? stackTrace) {
+                                print("Error loading profile image: $exception");
+                              }
+                              : null,
+                      child:
+                          (photoUrl == null || photoUrl.isEmpty)
+                              ? const Icon(Icons.person, size: 50)
+                              : null,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    email,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      email,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -399,7 +397,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
-    int currentIndex = 4;
+    int currentIndex = 2;
     return BottomNavigationBar(
       backgroundColor: AppConstants.primaryBlue,
       type:
@@ -417,42 +415,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
           case 1:
             Navigator.pushReplacementNamed(
               context,
-              '/expenses',
+              '/map',
             );
             break;
           case 2:
-
-            Navigator.pushReplacementNamed(
-              context,
-              '/add',
-            );
-            break;
-          case 3:
-
-            Navigator.pushReplacementNamed(
-              context,
-              '/wallet',
-            );
-            break;
-          case 4:
             break;
         }
       },
       items: const [
         // The 'items' parameter is required for BottomNavigationBar
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.list_alt), // Changed to a more generic 'list' icon
-          label: 'Activity', // Changed label
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle_outline),
-          label: 'New', // Changed label
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.notifications),
-          label: 'Alerts', // Changed label
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore',),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
     );
