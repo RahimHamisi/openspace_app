@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class GraphQLService {
   late GraphQLClient client;
 
-  GraphQLService({String endpoint ='http://127.0.0.1:8000/graphql/'}) {
+  GraphQLService({String endpoint ='http://192.168.137.1:8000/graphql/'}) {
     final httpLink = HttpLink(
       endpoint,
       httpClient: TimeoutHttpClient(const Duration(seconds: 60)),

@@ -45,25 +45,10 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
   @override
   void initState() {
     super.initState();
-    _prefillDescription();
+
   }
 
-  void _prefillDescription() {
-    if (widget.spaceName != null &&
-        widget.latitude != null &&
-        widget.longitude != null) {
-      _descriptionController.text =
-      "Reporting issue for: ${widget.spaceName}\nLocation: Lat: ${widget.latitude?.toStringAsFixed(5)}, Lon: ${widget.longitude?.toStringAsFixed(5)}\n\nDescription: ";
-    } else if (widget.spaceName != null) {
-      _descriptionController.text =
-      "Reporting issue for: ${widget.spaceName}\n\nDescription: ";
-    } else if (widget.latitude != null && widget.longitude != null) {
-      _descriptionController.text =
-      "Reporting issue at Location: Lat: ${widget.latitude?.toStringAsFixed(5)}, Lon: ${widget.longitude?.toStringAsFixed(5)}\n\nDescription: ";
-    } else {
-      _descriptionController.text = "Description: ";
-    }
-  }
+
 
   Future<void> _pickImages() async {
     if (_isSubmittingOverall) return;
@@ -154,7 +139,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       widget: Padding(
         padding: const EdgeInsets.all(16),
         child: Text(
-          "Your report (ID: $reportId) has been successfully submitted. Thank you!",
+          "Your report (reference_ID: $reportId) has been successfully submitted.Use This reference ID to track the progress of your report. Thank you!",
           textAlign: TextAlign.center,
         ),
       ),
@@ -191,7 +176,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       });
     }
     _formKey.currentState?.reset();
-    _prefillDescription(); // Re-prefill after clearing
+
   }
 
   Future<void> _submitReport() async {

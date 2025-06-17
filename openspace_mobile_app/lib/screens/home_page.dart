@@ -16,11 +16,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
 
   final List<_CardData> _cards = const [
-    _CardData(iconPath: 'assets/images/report1.jpg', title: 'Report unusual activity', route: '/report-issue'),
+    _CardData(iconPath: 'assets/images/report1.jpg', title: 'Report unusual activity', route: '/map'),
     _CardData(iconPath: 'assets/images/report1.jpg', title: 'Reported Issues', route: '/reported-issue'),
     _CardData(iconPath: 'assets/images/track_progress.jpg', title: 'Track progress', route: '/track-progress'),
     _CardData(iconPath: 'assets/images/openspace.jpg', title: 'Available open spaces', route: '/open'),
-    _CardData(iconPath: 'assets/images/openspace_detail.jpg', title: 'Book Open Space', route: '/book-openspace'),
+    _CardData(iconPath: 'assets/images/openspace_detail.jpg', title: 'Book Open Space', route: '/map'),
   ];
 
   @override
