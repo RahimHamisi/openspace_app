@@ -27,6 +27,41 @@ class Report {
     this.status,
   });
 
+
+  factory Report.fromRestJson(Map<String, dynamic> json) {
+    if (json['id'] == null ||
+        json['report_id'] == null ||
+        json['description'] == null ||
+        json['created_at'] == null) {
+      print("Error: Report.fromRestJson missing fields. Data: $json");
+      throw FormatException("Missing fields in REST response.");
+    }
+
+    User? reportUser;
+    if (json['user'] != null && json['user'] is Map<String, dynamic>) {
+      try {
+        reportUser = User.fromReportJson(json['user']);
+      } catch (e, s) {
+        print("Error parsing user: $e\n$s");
+      }
+    }
+
+    return Report(
+      id: json['id'].toString(),
+      reportId: json['report_id'],
+      description: json['description'],
+      email: json['email'],
+      file: json['file'],
+      createdAt: DateTime.parse(json['created_at']),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      spaceName: json['space_name'],
+      user: reportUser,
+      status: json['status'],
+    );
+  }
+
+
   factory Report.fromJson(Map<String, dynamic> json) {
     // Basic validation for essential report fields
     if (json['id'] == null ||
@@ -47,7 +82,6 @@ class Report {
         reportUser = null;
       }
     } else if (json['user'] != null) {
-      // This case means 'user' is present but not a Map, which is unexpected.
       print("Report.fromJson Warning: 'user' field is present but not a valid map (object). Actual type: ${json['user'].runtimeType}. Data: ${json['user']}");
       reportUser = null;
     }

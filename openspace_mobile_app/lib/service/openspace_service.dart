@@ -213,7 +213,7 @@ class OpenSpaceService {
           spaceName
           file
           type
-          status
+        
         }
       }
     """;
@@ -242,7 +242,7 @@ class OpenSpaceService {
         }
         if (exception.graphqlErrors.isNotEmpty) {
           throw Exception(
-            "Error from server: ${exception.graphqlErrors.first.message}",
+            "Error from server",
           );
         }
         throw Exception(

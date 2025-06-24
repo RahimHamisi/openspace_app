@@ -198,21 +198,21 @@ class _TrackProgressScreenState extends State<TrackProgressScreen> {
     // Fix for Date: Use createdAt directly as it's already DateTime
     final String formattedDate = DateFormat('MMMM dd, yyyy').format(currentReport.createdAt.toLocal());
 
-    final String status = currentReport.status ?? 'Unknown';
-    Color statusColor;
-    switch (status) {
-      case 'Ref Sm': // Assuming this is one of your actual status strings
-        statusColor = Colors.red;
-        break;
-      case 'Pending':
-        statusColor = Colors.orange;
-        break;
-      case 'Resolved': // Example, adjust to your actual status
-        statusColor = Colors.green;
-        break;
-      default:
-        statusColor = Colors.grey;
-    }
+    // final String status = currentReport.status ?? 'Unknown';
+    // Color statusColor;
+    // switch (status) {
+    //   case 'Ref Sm': // Assuming this is one of your actual status strings
+    //     statusColor = Colors.red;
+    //     break;
+    //   case 'Pending':
+    //     statusColor = Colors.orange;
+    //     break;
+    //   case 'Resolved': // Example, adjust to your actual status
+    //     statusColor = Colors.green;
+    //     break;
+    //   default:
+    //     statusColor = Colors.grey;
+    // }
     final String description = currentReport.description;
 
     final String? fileUrl = currentReport.file;
@@ -265,21 +265,21 @@ class _TrackProgressScreenState extends State<TrackProgressScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Align( // Center the status badge or place it as desired
-                alignment: Alignment.centerRight,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    status,
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ),
+              // const SizedBox(height: 12),
+              // Align( // Center the status badge or place it as desired
+              //   alignment: Alignment.centerRight,
+              //   child: Container(
+              //     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              //     decoration: BoxDecoration(
+              //       color: statusColor,
+              //       borderRadius: BorderRadius.circular(8),
+              //     ),
+              //     child: Text(
+              //       status,
+              //       style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 12),
               const Text("Description", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),

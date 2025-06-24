@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:openspace_mobile_app/utils/constants.dart';
 import '../service/openspace_service.dart';
 import '../model/Report.dart';
 
@@ -58,7 +59,7 @@ class _ReportedIssuesPageState extends State<ReportedIssuesPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: AppConstants.primaryBlue,
         elevation: 3,
         toolbarHeight: 80,
         shape: const RoundedRectangleBorder(

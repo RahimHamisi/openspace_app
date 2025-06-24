@@ -100,7 +100,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           );
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching open spaces: $_errorMessage')),
+          SnackBar(content: Text('Error fetching open spaces')),
         );
       }
     }
@@ -144,11 +144,11 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         }
       }
     } catch (e) {
-      debugPrint('Error getting user location: $e');
+      debugPrint('Error getting user location');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ).showSnackBar(SnackBar(content: Text("Error")));
       }
     }
   }
@@ -318,7 +318,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             mapController: _mapController,
             options: MapOptions(
               interactionOptions: const InteractionOptions(
-                flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
+                flags: InteractiveFlag.all | InteractiveFlag.pinchZoom,
               ),
               initialCenter: _initialPosition,
               initialZoom: 13.0,

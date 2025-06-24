@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'
     show Diagnosticable;
+import 'package:openspace_mobile_app/screens/reported_issue.dart';
+import 'package:openspace_mobile_app/screens/userreports.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
 import 'package:openspace_mobile_app/screens/edit_profile.dart';
 import 'package:openspace_mobile_app/screens/pop_card.dart';
-import 'package:openspace_mobile_app/screens/reported_issue.dart';
 import '../service/ProfileService.dart';
 import 'bookings.dart';
 
@@ -313,7 +314,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ReportedIssuesPage(),
+                    builder: (context) => const UserReportsPage(),
                   ),
                 ),
           ),
@@ -325,7 +326,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             onTap:
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const BookingsPage()),
+                  MaterialPageRoute(builder: (context) => const MyBookingsPage()),
                 ),
           ),
         ],

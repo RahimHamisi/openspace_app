@@ -36,14 +36,6 @@ class Sidebar extends StatelessWidget {
                     Navigator.pushReplacementNamed(context, '/user-profile');
                   }),
                   const SizedBox(height: 16),
-                  _buildMenuItem(Icons.notifications, 'Notifications', () {
-                    Navigator.pushReplacementNamed(context, '/notification-screen');
-                  }),
-                  const SizedBox(height: 16),
-                  _buildMenuItem(Icons.calendar_today, 'Events', () {
-                    Navigator.pushReplacementNamed(context, '/upcoming-events');
-                  }),
-                  const SizedBox(height: 16),
                   _buildMenuItem(Icons.contact_mail, 'Helps and FAQs', () {
                     Navigator.pushReplacementNamed(context, '/help-support');
                   }),

@@ -4,12 +4,13 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:openspace_mobile_app/api/graphql/graphql_service.dart';
 import 'package:openspace_mobile_app/providers/locale_provider.dart';
 import 'package:openspace_mobile_app/providers/theme_provider.dart';
-import 'package:openspace_mobile_app/screens/book_openspace.dart';
+import 'package:openspace_mobile_app/screens/Forget_password.dart';
+import 'package:openspace_mobile_app/screens/Reset_Password.dart';
 import 'package:openspace_mobile_app/screens/bookings.dart';
 import 'package:openspace_mobile_app/screens/helps_and_Faqs.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
-import 'package:openspace_mobile_app/screens/openspace.dart';
 import 'package:openspace_mobile_app/screens/terms_and_conditions.dart';
+import 'package:openspace_mobile_app/screens/userreports.dart';
 import 'package:openspace_mobile_app/utils/permission.dart';
 import 'package:provider/provider.dart';
 import 'utils/theme.dart';
@@ -71,8 +72,37 @@ class MyApp extends StatelessWidget {
                 '/change-theme': (context) => const ThemeChangePage(),
                 '/help-support': (context) => const HelpPage(),
                 '/terms': (context) => const TermsAndConditionsPage(),
-                  '/bookings-list': (context) => const BookingsPage(),
-                  '/open': (context) => const OpenSpacePage(),
+                  '/bookings-list': (context) => const MyBookingsPage(),
+                  '/userReports': (context) => const UserReportsPage(),
+                  '/forgot-password': (context) => const ForgotPasswordPage(),
+                },
+                onGenerateRoute: (RouteSettings settings) {
+                  print("onGenerateRoute called with: ${settings.name}");
+                  if (settings.name != null &&
+                      settings.name!.startsWith('/reset-password')) {
+                    final uri = Uri.parse(settings.name!);
+                    if (uri.pathSegments.length == 3 &&
+                        uri.pathSegments[0] == 'reset-password') {
+                      final uid = uri.pathSegments[1];
+                      final token = uri.pathSegments[2];
+                      print(
+                          "Extracted for ResetPasswordPage - uid: $uid, token: $token"); // For debugging
+                      return MaterialPageRoute(
+                        builder: (context) =>
+                            ResetPasswordPage(uid: uid, token: token),
+                      );
+                    } else {
+                      print(
+                          "Route started with /reset-password but path segments did not match pattern."); // For debugging
+                    }
+                  }
+                  print("Route ${settings.name} not found, showing default PageNotFound.");
+                  return MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(title: const Text("Error")),
+                      body: const Center(child: Text("Page not found")),
+                    ),
+                  );
                 },
               ),
             );

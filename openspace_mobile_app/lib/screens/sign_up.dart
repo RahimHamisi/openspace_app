@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:openspace_mobile_app/utils/constants.dart';
 import '../service/auth_service.dart';
 import 'sign_in.dart';
 
@@ -161,7 +162,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) return 'Password is required';
-                                if (value.length < 6) return 'Password must be at least 6 characters';
+                                if (value.length < 8) return 'Password must be at least 6 characters';
                                 return null;
                               },
                             ),
@@ -200,7 +201,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _submitForm,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(255, 40, 69, 231),
+                                  backgroundColor: AppConstants.primaryBlue,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                 ),
                                 child: _isLoading

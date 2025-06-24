@@ -4,7 +4,7 @@ import 'auth_service.dart'; // Make sure this path is correct
 
 class ProfileService {
 
-  static const String _baseUrl = 'http://192.168.137.1:8000/';
+  static const String _baseUrl = 'http://192.168.1.169:8000/';
   static const String _profileEndpoint = 'api/v1/profile';
 
   static Future<Map<String, dynamic>> fetchProfile() async {
@@ -33,17 +33,17 @@ class ProfileService {
         return jsonDecode(response.body) as Map<String, dynamic>;
       } else if (response.statusCode == 401 || response.statusCode == 403) {
         await AuthService.logout(); // Example: force logout on auth error
-        throw Exception('Authentication error (${response.statusCode}): Invalid or expired token. Please log in again.');
+        throw Exception('Authentication error : Invalid or expired token. Please log in again.');
       }
       else {
-        throw Exception('Failed to load profile. Status: ${response.statusCode}, Body: ${response.body}');
+        throw Exception('Failed to load profile. Status');
       }
     } on http.ClientException catch (e) {
       print('ProfileService: ClientException - $e');
-      throw Exception('Network error or server unreachable: $e');
+      throw Exception('Network error or server unreachable');
     } catch (e) {
-      print('ProfileService: Error fetching profile - $e');
-      throw Exception('An unexpected error occurred: $e');
+      print('ProfileService: Error fetching profile');
+      throw Exception('An unexpected error occurred');
     }
   }
 }

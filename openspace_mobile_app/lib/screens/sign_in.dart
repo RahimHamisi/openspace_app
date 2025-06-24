@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:openspace_mobile_app/screens/Forget_password.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
 import 'package:openspace_mobile_app/screens/sign_up.dart';
 import 'package:quickalert/quickalert.dart';
@@ -80,10 +81,10 @@ class _SignInScreenState extends State<SignInScreen> {
         if (!mounted) return;
         setState(() => _isLoading = false);
         String errorMessage = e.toString();
-        if (errorMessage.startsWith("Exception: ")) {
+        if (errorMessage.startsWith("Exception")) {
           errorMessage = errorMessage.substring("Exception: ".length);
         }
-        _showAlert(QuickAlertType.error, "Login error: $errorMessage");
+        _showAlert(QuickAlertType.error, "Login error");
       }
     } else {
 
@@ -166,7 +167,13 @@ class _SignInScreenState extends State<SignInScreen> {
                                   ],
                                 ),
                                 TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+                                    );
+
+                                  },
                                   child: const Text('Forgot password?', style: TextStyle(color: Colors.purple)),
                                 ),
                               ],
@@ -179,11 +186,11 @@ class _SignInScreenState extends State<SignInScreen> {
                                   : ElevatedButton(
                                 onPressed: _signIn,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(255, 40, 69, 231),
+                                  backgroundColor: AppConstants.primaryBlue,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                 ),
                                 child: const Text('Sign in',
-                                    style: TextStyle(color: Colors.white, fontSize: 16)),
+                                    style: TextStyle(color: AppConstants.white, fontSize: 16)),
                               ),
                             ),
                             const SizedBox(height: 16),

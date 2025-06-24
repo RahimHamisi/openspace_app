@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:openspace_mobile_app/screens/side_bar.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
-// import 'package:openspace_mobile_app/screens/sidebar.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,7 +19,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _CardData(iconPath: 'assets/images/report1.jpg', title: 'Report unusual activity', route: '/map'),
     _CardData(iconPath: 'assets/images/report1.jpg', title: 'Reported Issues', route: '/reported-issue'),
     _CardData(iconPath: 'assets/images/track_progress.jpg', title: 'Track progress', route: '/track-progress'),
-    _CardData(iconPath: 'assets/images/openspace.jpg', title: 'Available open spaces', route: '/open'),
     _CardData(iconPath: 'assets/images/openspace_detail.jpg', title: 'Book Open Space', route: '/map'),
   ];
 
@@ -51,12 +50,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             );
           }
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: AppConstants.white , size: 30),
-            onPressed: () {},
-          ),
-        ],
       ),
       drawer: const Sidebar(),
       body: Stack(

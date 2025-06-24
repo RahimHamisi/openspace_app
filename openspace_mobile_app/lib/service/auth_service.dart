@@ -32,7 +32,7 @@ class AuthService {
     );
 
     if (result.hasException) {
-      throw Exception("Registration failed: ${result.exception.toString()}");
+      throw Exception("Registration failed");
     }
 
     final data = result.data!["registerUser"];
@@ -78,7 +78,7 @@ class AuthService {
             await Future.delayed(Duration(seconds: 2));
             continue;
           }
-          throw Exception("Login failed: ${result.exception.toString()}");
+          throw Exception("Login failed");
         }
 
         final output = result.data?['loginUser']?['output'];
@@ -109,10 +109,10 @@ class AuthService {
         if (e.toString().contains('SocketException')) {
           throw Exception('Network error: Please check your internet connection.');
         }
-        throw Exception('Login failed: $e');
+        throw Exception('Login failed');
       }
     }
-    throw Exception('Login failed after $retryCount attempts due to timeout.');
+    throw Exception('Login failed after attempts due to timeout.');
   }
 
   /// Retrieves the stored authentication token.
