@@ -11,6 +11,7 @@ import 'package:openspace_mobile_app/screens/helps_and_Faqs.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
 import 'package:openspace_mobile_app/screens/terms_and_conditions.dart';
 import 'package:openspace_mobile_app/screens/userreports.dart';
+import 'package:openspace_mobile_app/service/auth_service.dart';
 import 'package:openspace_mobile_app/utils/permission.dart';
 import 'package:provider/provider.dart';
 import 'utils/theme.dart';

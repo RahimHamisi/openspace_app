@@ -8,7 +8,7 @@ import 'auth_service.dart';
 
 class BookingService {
   static const String _baseUrl =
-      "http://192.168.1.169:8000"; // Android Emulator to local Django
+      "http://192.168.8.233:8000"; // Android Emulator to local Django
   // static const String _baseUrl = "http://127.0.0.1:8000"; // iOS Sim / Desktop to local Django
   // static const String _baseUrl = "http://YOUR_DEPLOYED_API_DOMAIN.COM"; // For deployed API
 
@@ -148,7 +148,7 @@ class BookingService {
       throw Exception(_lastError);
     } catch (e) {
       _lastError =
-          'An unexpected error occurred while creating booking';
+          'This open space has already been booked and is unavailable';
       print('BookingService: Error creating booking: $_lastError');
       throw Exception(_lastError);
     }
