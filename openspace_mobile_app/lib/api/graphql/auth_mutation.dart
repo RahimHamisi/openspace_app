@@ -35,9 +35,7 @@ mutation loginUser($input : UserLoginInputObject!){
       }
     }
     
-  }
-  
-  
+  }  
 }
 ''';
 

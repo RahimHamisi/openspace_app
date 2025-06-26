@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:openspace_mobile_app/screens/language_choice.dart';
 import 'package:openspace_mobile_app/screens/reported_issue.dart';
 import 'package:openspace_mobile_app/screens/theme_change.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
@@ -25,7 +24,7 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           _buildListTile(Icons.language, "Change Language", () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageChangePage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ThemeChangePage()));
           }),
           _buildListTile(Icons.light_mode, "Theme", () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const ThemeChangePage()));

@@ -6,6 +6,8 @@ class User {
   final String? role;
   final bool? isStaff;
   final bool? isWardExecutive;
+  final bool isAnonymous;
+
 
   User({
     required this.id,
@@ -15,6 +17,7 @@ class User {
     this.role,
     this.isStaff,
     this.isWardExecutive,
+    this.isAnonymous = false,
   });
 
   factory User.fromReportJson(Map<String, dynamic> json) {
@@ -27,6 +30,7 @@ class User {
       username: json['username'] as String,
       isStaff: json['isStaff'] as bool?,
       isWardExecutive: json['isSuperuser'] as bool?,
+      isAnonymous: false,
       // accessToken, refreshToken, role will be null as they are not expected from report.user
     );
   }
@@ -40,6 +44,7 @@ class User {
       refreshToken: user['refreshToken'],
       isStaff: user['isStaff'],
       isWardExecutive: user['isWardExecutive'],
+      isAnonymous: false,
     );
   }
 
@@ -50,6 +55,15 @@ class User {
       role: json['role'],
       isStaff: json['isStaff'],
       isWardExecutive: json['isSuperuser'],
+      isAnonymous: false,
+    );
+  }
+
+  factory User.anonymous() {
+    return User(
+      id: 'anonymous_${DateTime.now().millisecondsSinceEpoch}',
+      username: 'Anonymous',
+      isAnonymous: true,
     );
   }
 

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'
-    show Diagnosticable;
-import 'package:openspace_mobile_app/screens/reported_issue.dart';
 import 'package:openspace_mobile_app/screens/userreports.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
 import 'package:openspace_mobile_app/screens/edit_profile.dart';
 import 'package:openspace_mobile_app/screens/pop_card.dart';
+import 'package:provider/provider.dart';
 import '../service/ProfileService.dart';
+import '../widget/access_denied_dialog.dart';
 import 'bookings.dart';
+import '../providers/user_provider.dart';
 
 
 class UserProfilePage extends StatefulWidget {
@@ -25,7 +25,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _fetchProfile();
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    if (!user.isAnonymous) {
+      _fetchProfile();
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _fetchProfile() async {
@@ -46,7 +53,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         errorMessage = errorMessage.substring("Exception: ".length);
       }
       setState(() {
-        _error = 'Failed to load profile: $errorMessage';
+        _error = 'Failed to load profile';
         _isLoading = false;
       });
 
@@ -65,7 +72,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 '/login',
-                (route) => false,
+                    (route) => false,
               );
             }
           });
@@ -76,16 +83,38 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context).user;
+    if (user.isAnonymous) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showAccessDeniedDialog(context, featureName: "profile");
+      });
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppConstants.primaryBlue,
+          title: const Text(
+            'Profile',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppConstants.white,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: const Center(
+          child: Text("Please log in to view your profile."),
+        ),
+        bottomNavigationBar: _buildBottomNavigationBar(context),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppConstants.primaryBlue,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppConstants.white),
           onPressed: () {
-            Navigator.pushReplacementNamed(
-              context,
-              '/home',
-            );
+            Navigator.pushReplacementNamed(context, '/home');
           },
         ),
         title: const Text(
@@ -104,22 +133,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ),
           IconButton(
             icon: const Icon(Icons.edit, color: AppConstants.white),
-            onPressed:
-                _isLoading || _error != null
-                    ? null
-                    : () {
-                      if (_profile != null) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => const EditProfilePage(
-                                  /* pass _profile if needed */
-                                ),
-                          ),
-                        );
-                      }
-                    },
+            onPressed: _isLoading || _error != null
+                ? null
+                : () {
+              if (_profile != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfilePage(),
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
@@ -179,9 +204,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     String name = _profile?['name'] ?? _profile?['username'] ?? 'N/A';
     String email = _profile?['email'] ?? 'No email provided';
     String? photoUrl =
-        _profile?['photoUrl'] ??
-        _profile?['profile_picture'] ??
-        _profile?['user']?['profile_picture'];
+        _profile?['photoUrl'] ?? _profile?['profile_picture'] ?? _profile?['user']?['profile_picture'];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -202,16 +225,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      onBackgroundImageError:
-                          photoUrl != null && photoUrl.isNotEmpty
-                              ? (dynamic exception, StackTrace? stackTrace) {
-                                print("Error loading profile image: $exception");
-                              }
-                              : null,
-                      child:
-                          (photoUrl == null || photoUrl.isEmpty)
-                              ? const Icon(Icons.person, size: 50)
-                              : null,
+                      onBackgroundImageError: photoUrl != null && photoUrl.isNotEmpty
+                          ? (dynamic exception, StackTrace? stackTrace) {
+                        print("Error loading profile image: $exception");
+                      }
+                          : null,
+                      child: (photoUrl == null || photoUrl.isEmpty)
+                          ? const Icon(Icons.person, size: 50)
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -253,9 +274,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => const EditProfilePage(
-                        ),
+                    builder: (context) => const EditProfilePage(),
                   ),
                 );
               }
@@ -310,24 +329,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
             icon: Icons.report_problem_outlined,
             title: 'My Reports',
             subtitle: 'View and manage your reports',
-            onTap:
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UserReportsPage(),
-                  ),
-                ),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UserReportsPage(),
+              ),
+            ),
           ),
           _buildSettingsItem(
             context,
             icon: Icons.event_available_outlined,
             title: 'My Bookings',
             subtitle: 'View and manage your bookings',
-            onTap:
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyBookingsPage()),
-                ),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MyBookingsPage(),
+              ),
+            ),
           ),
         ],
       ),
@@ -335,12 +354,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _buildSettingsItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required String subtitle,
+        required VoidCallback onTap,
+      }) {
     return Card(
       elevation: 1,
       margin: const EdgeInsets.only(bottom: 10),
@@ -353,15 +372,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ),
         title: Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           subtitle,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
         ),
         trailing: Icon(
           Icons.chevron_right,
@@ -374,14 +389,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   void _showPopup(
-    BuildContext context, {
-    required String title,
-    required String message,
-    required String buttonText,
-    required IconData icon,
-    required Color iconColor,
-    required VoidCallback onConfirm,
-  }) {
+      BuildContext context, {
+        required String title,
+        required String message,
+        required String buttonText,
+        required IconData icon,
+        required Color iconColor,
+        required VoidCallback onConfirm,
+      }) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -401,9 +416,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     int currentIndex = 2;
     return BottomNavigationBar(
       backgroundColor: AppConstants.primaryBlue,
-      type:
-          BottomNavigationBarType
-              .fixed,
+      type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex,
       selectedItemColor: AppConstants.white,
       unselectedItemColor: AppConstants.white.withOpacity(0.7),
@@ -414,19 +427,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
             Navigator.pushReplacementNamed(context, '/home');
             break;
           case 1:
-            Navigator.pushReplacementNamed(
-              context,
-              '/map',
-            );
+            Navigator.pushReplacementNamed(context, '/map');
             break;
           case 2:
             break;
         }
       },
       items: const [
-        // The 'items' parameter is required for BottomNavigationBar
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore',),
+        BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
     );

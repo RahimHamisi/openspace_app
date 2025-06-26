@@ -84,11 +84,10 @@ class OpenSpaceService {
         },
       );
 
-      // 🚨 Log any GraphQL exception but continue if data is usable
       if (result.hasException) {
         final exception = result.exception!;
         if (exception.linkException != null) {
-          throw Exception("Network error: ${exception.linkException}");
+          throw Exception("Network error");
         }
 
         // Print all graphql errors for debugging
@@ -96,7 +95,6 @@ class OpenSpaceService {
           debugPrint("[GraphQL Error] ${err.message}");
         }
 
-        // Still allow if data is available
         final data = result.data;
         if (data != null &&
             data['createReport'] != null &&
@@ -107,16 +105,14 @@ class OpenSpaceService {
         }
 
         // If no data is returned, treat as failure
-        throw Exception("GraphQL error: ${exception.graphqlErrors.firstOrNull?.message ?? 'Unknown error'}");
+        throw Exception('No Data are Rerturned from the server');
       }
-
-      // ✅ Success path
       return result.data?['createReport']['report'] as Map<String, dynamic>?;
     } catch (e) {
       // Log unexpected client-side errors
       debugPrint("Exception in createReport: $e");
       throw Exception(
-        e.toString().replaceFirst(RegExp(r'^Exception:\s*'), ''),
+        "unknown error"
       );
     }
   }

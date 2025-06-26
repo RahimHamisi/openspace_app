@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-
+import '../providers/user_provider.dart';
 import '../utils/constants.dart';
 import 'onboarding_screen.dart';
 import 'sign_up.dart';
 import 'splash_screen.dart';
 import 'user_type.dart';
+import '../model/user_model.dart';
 
 class IntroSliderScreen extends StatefulWidget {
   const IntroSliderScreen({super.key});
@@ -25,8 +27,6 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted && _pageController.hasClients && _currentPage == 0) {
           _nextPage();
-        } else {
-          // print("Skipped auto-advance: Widget unmounted or controller detached");
         }
       });
     }
@@ -45,8 +45,7 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
   }
 
   void _nextPage() {
-    if (!mounted ||!_pageController.hasClients) {
-    //  print("Cannot proceed: Widget unmounted or controller detached");
+    if (!mounted || !_pageController.hasClients) {
       return;
     }
     if (_currentPage < 2) {
@@ -58,10 +57,9 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
   }
 
   void _previousPage() {
-    if (!mounted ||!_pageController.hasClients){
-    //  print("Cannot proceed: Widget unmounted or controller detached");
+    if (!mounted || !_pageController.hasClients) {
       return;
-    } 
+    }
     if (_currentPage > 0) {
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -71,12 +69,12 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
   }
 
   void _onUserTypeSelected(String? userType) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (userType == 'Registered User') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const SignUpScreen()),
-      );
+      userProvider.setUser(User.anonymous()); // Reset to anonymous until login
+      Navigator.pushReplacementNamed(context, '/login');
     } else {
+      userProvider.setUser(User.anonymous());
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -86,7 +84,6 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // PageView for sliding between screens
           PageView(
             controller: _pageController,
             onPageChanged: _onPageChanged,
@@ -97,7 +94,6 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
               UserTypeScreenContent(onUserTypeSelected: _onUserTypeSelected),
             ],
           ),
-          // Page indicator and navigation buttons
           Positioned(
             bottom: 50,
             left: 0,
@@ -124,7 +120,6 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Navigation buttons (Back and Next)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Row(
@@ -132,18 +127,18 @@ class _IntroSliderScreenState extends State<IntroSliderScreen> {
                     children: [
                       _currentPage > 0
                           ? TextButton(
-                              onPressed: _previousPage,
-                              child: const Text(
-                                'Back',
-                                style: TextStyle(color: AppConstants.white),
-                              ),
-                            )
+                        onPressed: _previousPage,
+                        child: const Text(
+                          'Back',
+                          style: TextStyle(color: AppConstants.white),
+                        ),
+                      )
                           : const SizedBox(width: 60),
                       _currentPage < 2
                           ? ElevatedButton(
-                              onPressed: _nextPage,
-                              child: const Text('Next'),
-                            )
+                        onPressed: _nextPage,
+                        child: const Text('Next'),
+                      )
                           : const SizedBox(width: 60),
                     ],
                   ),

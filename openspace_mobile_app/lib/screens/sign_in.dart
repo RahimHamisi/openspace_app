@@ -1,11 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:openspace_mobile_app/screens/Forget_password.dart';
-import 'package:openspace_mobile_app/screens/home_page.dart';
-import 'package:openspace_mobile_app/screens/sign_up.dart';
 import 'package:quickalert/quickalert.dart';
-
+import 'package:provider/provider.dart';
 import '../service/auth_service.dart';
 import '../utils/constants.dart';
+import '../model/user_model.dart';
+import '../providers/user_provider.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -29,6 +29,12 @@ class _SignInScreenState extends State<SignInScreen> {
     _authService = AuthService();
   }
 
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   void _showAlert(QuickAlertType type, String message, {VoidCallback? onConfirmed}) {
     if (!mounted) return;
@@ -39,55 +45,61 @@ class _SignInScreenState extends State<SignInScreen> {
       showConfirmBtn: true,
       confirmBtnText: 'OK',
       onConfirmBtnTap: () {
-        Navigator.of(context).pop(); // Close the alert manually
+        Navigator.of(context).pop();
         if (onConfirmed != null) {
-          onConfirmed(); // Custom behavior after confirmation
+          onConfirmed();
         }
       },
     );
   }
 
-
   void _signIn() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) return;
 
-      try {
-        final response = await _authService.login(
-          _usernameController.text.trim(),
-          _passwordController.text.trim(),
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await _authService.login(
+        _usernameController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      if (response != null && response['success'] == true) {
+        // Set user in UserProvider
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.setUser(User.fromLoginJson(response));
+
+        _showAlert(
+          QuickAlertType.success,
+          response['message'] ?? "Successfully Logged In!",
+          onConfirmed: () {
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
+          },
         );
-
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-
-        if (response != null && response['success'] == true) {
-          _showAlert(
-              QuickAlertType.success,
-              response['message'] ?? "Successfully Logged In!",
-              onConfirmed: () {
-                if (mounted) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomePage()), // Assuming HomePage exists
-                  );
-                }
-              }
-          );
-        } else {
-          _showAlert(QuickAlertType.error, response?['message'] ?? "Login failed. Please check your credentials.");
-        }
-      } catch (e) {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        String errorMessage = e.toString();
-        if (errorMessage.startsWith("Exception")) {
-          errorMessage = errorMessage.substring("Exception: ".length);
-        }
-        _showAlert(QuickAlertType.error, "Login error");
+      } else {
+        _showAlert(
+          QuickAlertType.error,
+          response?['message'] ?? "Login failed. Please check your credentials.",
+        );
       }
-    } else {
-
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      String errorMessage = e.toString().replaceFirst('Exception: ', '');
+      if (kDebugMode) {
+        print('SignInScreen: Login error - $errorMessage');
+      }
+      _showAlert(
+        QuickAlertType.error,
+        errorMessage.contains('timeout')
+            ? 'Connection timed out. Please check your internet and try again.'
+            : 'Login failed. Please try again.',
+      );
     }
   }
 
@@ -114,10 +126,15 @@ class _SignInScreenState extends State<SignInScreen> {
                           children: [
                             Image.asset('assets/images/bibi.png', height: 75),
                             const SizedBox(height: 16),
-                            const Text('Welcome back', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                            const Text(
+                              'Welcome back',
+                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            ),
                             const SizedBox(height: 8),
-                            const Text('Please enter your credentials to sign in',
-                                style: TextStyle(fontSize: 16, color: AppConstants.grey)),
+                            const Text(
+                              'Please enter your credentials to sign in',
+                              style: TextStyle(fontSize: 16, color: AppConstants.grey),
+                            ),
                             const SizedBox(height: 24),
                             TextFormField(
                               controller: _usernameController,
@@ -168,11 +185,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
-                                    );
-
+                                    Navigator.pushNamed(context, '/forgot-password');
                                   },
                                   child: const Text('Forgot password?', style: TextStyle(color: Colors.purple)),
                                 ),
@@ -189,20 +202,21 @@ class _SignInScreenState extends State<SignInScreen> {
                                   backgroundColor: AppConstants.primaryBlue,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                 ),
-                                child: const Text('Sign in',
-                                    style: TextStyle(color: AppConstants.white, fontSize: 16)),
+                                child: const Text(
+                                  'Sign in',
+                                  style: TextStyle(color: AppConstants.white, fontSize: 16),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 16),
                             TextButton(
                               onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const SignUpScreen()),
-                                );
+                                Navigator.pushNamed(context, '/register');
                               },
-                              child: const Text("Don't have an account? Create account",
-                                  style: TextStyle(color: Colors.grey)),
+                              child: const Text(
+                                "Don't have an account? Create account",
+                                style: TextStyle(color: Colors.grey),
+                              ),
                             ),
                           ],
                         ),

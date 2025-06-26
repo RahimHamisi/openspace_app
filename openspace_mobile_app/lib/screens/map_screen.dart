@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
@@ -5,14 +6,13 @@ import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:openspace_mobile_app/screens/report_screen.dart';
+import 'package:provider/provider.dart';
 import '../model/openspace.dart';
 import '../service/openspace_service.dart';
 import '../utils/location_service.dart';
 import '../utils/map_utils.dart';
-import 'book_openspace.dart';
-
-
+import '../widget/access_denied_dialog.dart';
+import '../providers/user_provider.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -70,6 +70,10 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           _mapController.camera.zoom,
         );
       }
+    }, onError: (e) {
+      if (kDebugMode) {
+        print('Location stream error: $e');
+      }
     });
   }
 
@@ -94,14 +98,14 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = e.toString().replaceFirst(
-            RegExp(r'^Exception:\s*'),
-            '',
-          );
+          _errorMessage = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching open spaces')),
+          SnackBar(content: Text('Error fetching open spaces: $_errorMessage')),
         );
+      }
+      if (kDebugMode) {
+        print('Fetch open spaces error: $e');
       }
     }
   }
@@ -110,9 +114,16 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     try {
       _getUserLocation();
     } catch (e) {
+      if (kDebugMode) {
+        print('Map initialization error: $e');
+      }
       Future.delayed(
         const Duration(milliseconds: 100),
-        _checkMapInitialization,
+            () {
+          if (mounted) {
+            _checkMapInitialization();
+          }
+        },
       );
     }
   }
@@ -144,11 +155,13 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         }
       }
     } catch (e) {
-      debugPrint('Error getting user location');
+      if (kDebugMode) {
+        print('Error getting user location: $e');
+      }
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Location error: ${e.toString().replaceFirst('Exception: ', '')}")),
+        );
       }
     }
   }
@@ -167,69 +180,99 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _showLocationPopup(
-    LatLng position, {
-    OpenSpaceMarker? openSpace,
-  }) async {
+      LatLng position, {
+        OpenSpaceMarker? openSpace,
+      }) async {
+    if (!mounted) return;
+
     setState(() {
       _selectedSpace = openSpace;
       _selectedPosition = position;
     });
 
-    final areaName =
-        await _locationService.getAreaName(position) ?? "Unknown Area";
-    if (mounted) {
-      setState(() {
-        _selectedAreaName = areaName;
-      });
+    try {
+      final areaName = await _locationService.getAreaName(position) ?? "Unknown Area";
+      if (mounted) {
+        setState(() {
+          _selectedAreaName = areaName;
+        });
+        await showModalBottomSheet(
+          context: context,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          backgroundColor: Colors.white,
+          isScrollControlled: true, // Allow dynamic height
+          builder: (context) => _buildBottomSheetContent(),
+        );
+        if (mounted) {
+          _closePopup(); // Reset state after sheet closes
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _selectedAreaName = "Unknown Area";
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error fetching area name: ${e.toString().replaceFirst('Exception: ', '')}")),
+        );
+      }
+      if (kDebugMode) {
+        print('Error showing location popup: $e');
+      }
     }
   }
 
   void _closePopup() {
-    setState(() {
-      _selectedPosition = null;
-      _selectedSpace = null;
-      _selectedAreaName = null;
-    });
-  }
-
-  void _bookSpace() {
-    if (_selectedSpace != null && _selectedSpace!.isAvailable) {
-      debugPrint('Selected Space ID: ${_selectedSpace!.id}');
-      final int? spaceIdForBooking = int.tryParse(_selectedSpace!.id);
-
-      if (spaceIdForBooking == null || _selectedSpace!.id.isEmpty) {
-        debugPrint('Error: Invalid or empty space ID: ${_selectedSpace!.id}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Error: Selected space has an invalid or empty ID format for booking."),
-          ),
-        );
-        return;
-      }
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BookingPage(
-            spaceId: spaceIdForBooking,
-            spaceName: _selectedSpace!.name,
-          ),
-        ),
-      );
-    } else if (_selectedSpace != null && !_selectedSpace!.isAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("This space is currently not available for booking."),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("No space selected or space details are unavailable."),
-        ),
-      );
+    if (mounted) {
+      setState(() {
+        _selectedPosition = null;
+        _selectedSpace = null;
+        _selectedAreaName = null;
+      });
     }
   }
 
+  void _bookSpace() {
+    if (_selectedSpace == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No space selected for booking.")),
+      );
+      return;
+    }
+
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    if (user.isAnonymous) {
+      showAccessDeniedDialog(context, featureName: "booking");
+      return;
+    }
+
+    if (_selectedSpace!.isAvailable) {
+      final int? spaceIdForBooking = int.tryParse(_selectedSpace!.id);
+      if (spaceIdForBooking == null || _selectedSpace!.id.isEmpty) {
+        if (kDebugMode) {
+          print('Invalid space ID: ${_selectedSpace!.id}');
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error: Invalid space ID for booking.")),
+        );
+        return;
+      }
+      Navigator.pushNamed(
+        context,
+        '/booking',
+        arguments: {
+          'spaceId': spaceIdForBooking,
+          'spaceName': _selectedSpace!.name,
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("This space is currently not available for booking.")),
+      );
+    }
+  }
 
   void _reportSpace() {
     double? lat;
@@ -243,34 +286,27 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     } else if (_selectedPosition != null) {
       lat = _selectedPosition!.latitude;
       lon = _selectedPosition!.longitude;
-      // spaceName will be null if it's just a general location
     }
 
     if (lat != null && lon != null) {
-      Navigator.push(
+      Navigator.pushNamed(
         context,
-        MaterialPageRoute(
-          builder: (context) => ReportIssuePage(
-            latitude: lat,
-            longitude: lon,
-            spaceName: spaceName, // This can be null
-          ),
-        ),
+        '/report',
+        arguments: {
+          'latitude': lat,
+          'longitude': lon,
+          'spaceName': spaceName,
+        },
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Cannot report without location data."),
-        ),
+        const SnackBar(content: Text("Cannot report without location data.")),
       );
     }
   }
 
-
   Future<void> _getDirections(LatLng destination) async {
-    final userLocation = await _locationService.getUserLocation(
-      useCache: false,
-    );
+    final userLocation = await _locationService.getUserLocation(useCache: false);
     if (userLocation == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Unable to fetch your current location.")),
@@ -290,11 +326,162 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          "Directions to $_selectedAreaName:\n"
-          "Straight-line distance: $distanceInKm km.\n"
-          "(Implement a directions API for detailed navigation.)",
+          "Directions to ${_selectedAreaName ?? 'selected location'}:\n"
+              "Straight-line distance: $distanceInKm km.\n"
+              "(Implement a directions API for detailed navigation.)",
         ),
         duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
+  Widget _buildBottomSheetContent() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Grabber handle
+          Container(
+            width: 40,
+            height: 5,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey[400],
+              borderRadius: BorderRadius.circular(2.5),
+            ),
+          ),
+          // Close button
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              icon: const Icon(
+                Icons.close,
+                size: 20,
+                color: Colors.black54,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          // Area name
+          Text(
+            _selectedAreaName ?? "Unknown Area",
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          // Latitude and Longitude
+          _buildDetailRow(
+            "Latitude",
+            _selectedPosition?.latitude.toStringAsFixed(6) ?? 'N/A',
+          ),
+          _buildDetailRow(
+            "Longitude",
+            _selectedPosition?.longitude.toStringAsFixed(6) ?? 'N/A',
+          ),
+          // Open Space Details (if available)
+          if (_selectedSpace != null) ...[
+            const Divider(height: 24),
+            const Text(
+              "Open Space Details",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            _buildDetailRow("Name", _selectedSpace!.name),
+            _buildDetailRow("District", _selectedSpace!.district),
+            _buildDetailRow(
+              "Status",
+              _selectedSpace!.status,
+              valueColor: _selectedSpace!.isAvailable ? Colors.green : Colors.red,
+            ),
+          ],
+          const SizedBox(height: 16),
+          // Action Buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: _selectedPosition != null
+                    ? () {
+                  Navigator.pop(context);
+                  _getDirections(_selectedPosition!);
+                }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  "Get Directions",
+                  style: TextStyle(color: Colors.white, fontSize: 14),
+                ),
+              ),
+              if (_selectedSpace != null)
+                ElevatedButton(
+                  onPressed: _selectedSpace!.isAvailable
+                      ? () {
+                    Navigator.pop(context);
+                    _bookSpace();
+                  }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    "Book Now",
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _reportSpace();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  "Report",
+                  style: TextStyle(color: Colors.white, fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
@@ -328,35 +515,32 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 if (!mounted) return;
 
                 final clickedSpace = kinondoniSpaces.firstWhere(
-                  (space) =>
-                      (space.point.latitude - point.latitude).abs() < 0.0001 &&
+                      (space) =>
+                  (space.point.latitude - point.latitude).abs() < 0.0001 &&
                       (space.point.longitude - point.longitude).abs() < 0.0001,
-                  orElse:
-                      () => OpenSpaceMarker(
-                        id: '',
-                        name: '',
-                        district: '',
-                        latitude: point.latitude,
-                        longitude: point.longitude,
-                        isActive: false,
-                        status: '',
-                      ),
+                  orElse: () => OpenSpaceMarker(
+                    id: '',
+                    name: '',
+                    district: '',
+                    latitude: point.latitude,
+                    longitude: point.longitude,
+                    isActive: false,
+                    status: '',
+                  ),
                 );
 
-                if (clickedSpace.name.isNotEmpty) {
-                  _showLocationPopup(point, openSpace: clickedSpace);
-                } else {
-                  _showLocationPopup(point);
-                }
+                await _showLocationPopup(
+                  point,
+                  openSpace: clickedSpace.name.isNotEmpty ? clickedSpace : null,
+                );
               },
             ),
             children: [
               TileLayer(
                 key: ValueKey(isSatelliteView),
-                urlTemplate:
-                    isSatelliteView
-                        ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                        : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                urlTemplate: isSatelliteView
+                    ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                    : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 userAgentPackageName: "com.example.openspace_mobile_app",
                 tileProvider: CancellableNetworkTileProvider(),
                 keepBuffer: 5,
@@ -366,30 +550,25 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 positionStream: _locationService.getLocationStream(),
               ),
               MarkerLayer(
-                markers:
-                    kinondoniSpaces
-                        .map(
-                          (space) => Marker(
-                            point: space.point,
-                            width: 30,
-                            height: 30,
-                            child: GestureDetector(
-                              onTap:
-                                  () => _showLocationPopup(
-                                    space.point,
-                                    openSpace: space,
-                                  ),
-                              child: Icon(
-                                Icons.place,
-                                color:
-                                    space.isAvailable
-                                        ? Colors.green
-                                        : Colors.red,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
+                markers: kinondoniSpaces
+                    .map(
+                      (space) => Marker(
+                    point: space.point,
+                    width: 30,
+                    height: 30,
+                    child: GestureDetector(
+                      onTap: () => _showLocationPopup(
+                        space.point,
+                        openSpace: space,
+                      ),
+                      child: Icon(
+                        Icons.place,
+                        color: space.isAvailable ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ),
+                )
+                    .toList(),
               ),
             ],
           ),
@@ -433,29 +612,27 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               },
               suggestionsCallback: (pattern) async {
                 if (pattern.length < 3) return [];
-                final backendSuggestions =
-                    kinondoniSpaces
-                        .where(
-                          (space) => space.name.toLowerCase().contains(
-                            pattern.toLowerCase(),
-                          ),
-                        )
-                        .map(
-                          (space) => LocationSuggestion(
-                            name: space.name,
-                            position: space.point,
-                          ),
-                        )
-                        .toList();
-                final locationSuggestions = await _locationService
-                    .searchLocation(pattern);
+                final backendSuggestions = kinondoniSpaces
+                    .where(
+                      (space) => space.name.toLowerCase().contains(
+                    pattern.toLowerCase(),
+                  ),
+                )
+                    .map(
+                      (space) => LocationSuggestion(
+                    name: space.name,
+                    position: space.point,
+                  ),
+                )
+                    .toList();
+                final locationSuggestions =
+                await _locationService.searchLocation(pattern);
                 return [...backendSuggestions, ...locationSuggestions];
               },
-              itemBuilder:
-                  (context, suggestion) => ListTile(
-                    leading: const Icon(Icons.location_on),
-                    title: Text(suggestion.name),
-                  ),
+              itemBuilder: (context, suggestion) => ListTile(
+                leading: const Icon(Icons.location_on),
+                title: Text(suggestion.name),
+              ),
               onSelected: (suggestion) {
                 setState(() => _initialPosition = suggestion.position);
                 _mapController.move(suggestion.position, 15.0);
@@ -495,179 +672,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-          if (_selectedPosition != null)
-            Positioned(
-              top: 100,
-              left: 20,
-              right: 20,
-              child: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.close,
-                            size: 20,
-                            color: Colors.black54,
-                          ),
-                          onPressed: _closePopup,
-                        ),
-                      ),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            _selectedAreaName ?? "Unknown Area",
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildDetailRow(
-                            "Latitude",
-                            _selectedPosition!.latitude.toStringAsFixed(6),
-                          ),
-                          _buildDetailRow(
-                            "Longitude",
-                            _selectedPosition!.longitude.toStringAsFixed(6),
-                          ),
-                          if (_selectedSpace != null) ...[
-                            const Divider(height: 24),
-                            const Text(
-                              "Open Space Details",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildDetailRow("Name", _selectedSpace!.name),
-                            _buildDetailRow(
-                              "District",
-                              _selectedSpace!.district,
-                            ),
-                            _buildDetailRow(
-                              "Status",
-                              _selectedSpace!.status,
-                              valueColor:
-                                  _selectedSpace!.isAvailable
-                                      ? Colors.green
-                                      : Colors.red,
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          // ... inside the build method, within the Positioned widget for the popup:
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Or MainAxisAlignment.center and add SizedBox for spacing
-                            children: [
-                              ElevatedButton(
-                                onPressed:
-                                    () => _getDirections(_selectedPosition!),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text(
-                                  "Get Directions",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              if (_selectedSpace != null) ...[
-                                const SizedBox(width: 8), // Adjust spacing as needed
-                                ElevatedButton(
-                                  onPressed:
-                                  _selectedSpace?.isAvailable == true
-                                      ? _bookSpace
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    "Book Now",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(width: 8), // Adjust spacing as needed
-                              ElevatedButton(
-                                onPressed: _reportSpace, // Call the new report method
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange, // Choose a color for the report button
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text(
-                                  "Report",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-// ... rest of the popup content
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: _closePopup,
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -712,18 +716,17 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       backgroundColor: Colors.white,
       elevation: 2,
       shape: const CircleBorder(),
-      child:
-          animated
-              ? AnimatedBuilder(
-                animation: _opacityAnimation,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _isTracking ? _opacityAnimation.value : 1.0,
-                    child: Icon(icon, size: 20, color: Colors.black87),
-                  );
-                },
-              )
-              : Icon(icon, size: 20, color: Colors.black87),
+      child: animated
+          ? AnimatedBuilder(
+        animation: _opacityAnimation,
+        builder: (context, child) {
+          return Opacity(
+            opacity: _isTracking ? _opacityAnimation.value : 1.0,
+            child: Icon(icon, size: 20, color: Colors.black87),
+          );
+        },
+      )
+          : Icon(icon, size: 20, color: Colors.black87),
     );
   }
 
@@ -750,4 +753,3 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     );
   }
 }
-
