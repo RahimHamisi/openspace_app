@@ -11,7 +11,7 @@ import '../model/openspace.dart';
 import '../service/openspace_service.dart';
 import '../utils/location_service.dart';
 import '../utils/map_utils.dart';
-import '../widget/access_denied_dialog.dart';
+import '../utils/alert/access_denied_dialog.dart';
 import '../providers/user_provider.dart';
 
 class MapScreen extends StatefulWidget {
@@ -291,7 +291,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     if (lat != null && lon != null) {
       Navigator.pushNamed(
         context,
-        '/report',
+        '/report-issue',
         arguments: {
           'latitude': lat,
           'longitude': lon,

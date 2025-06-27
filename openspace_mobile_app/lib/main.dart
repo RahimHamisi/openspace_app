@@ -5,6 +5,7 @@ import 'package:openspace_mobile_app/providers/locale_provider.dart';
 import 'package:openspace_mobile_app/providers/theme_provider.dart';
 import 'package:openspace_mobile_app/screens/Forget_password.dart';
 import 'package:openspace_mobile_app/screens/Reset_Password.dart';
+import 'package:openspace_mobile_app/screens/book_openspace.dart';
 import 'package:openspace_mobile_app/screens/bookings.dart';
 import 'package:openspace_mobile_app/screens/helps_and_Faqs.dart';
 import 'package:openspace_mobile_app/screens/home_page.dart';
@@ -60,7 +61,6 @@ class MyApp extends StatelessWidget {
               initialRoute: '/',
               onGenerateRoute: (RouteSettings settings) {
                 print("onGenerateRoute called with: ${settings.name}");
-                // Navigation guard for protected routes
                 final protectedRoutes = [
                   '/user-profile',
                   '/edit-profile',
@@ -102,6 +102,49 @@ class MyApp extends StatelessWidget {
                     );
                   }
                 }
+                // Handle booking page with spaceId and optional spaceName
+                if (settings.name != null && settings.name!.startsWith('/book')) {
+                  final uri = Uri.parse(settings.name!);
+                  int? spaceId;
+                  String? spaceName;
+
+                  // Extract spaceId from the route path (e.g., /book/123)
+                  if (uri.pathSegments.length == 2 && uri.pathSegments[0] == 'book') {
+                    try {
+                      spaceId = int.parse(uri.pathSegments[1]); // Convert string to int
+                    } catch (e) {
+                      print("Invalid spaceId format: ${uri.pathSegments[1]}");
+                    }
+                  }
+
+                  // Extract spaceId and spaceName from arguments if provided
+                  if (settings.arguments != null) {
+                    if (settings.arguments is int) {
+                      spaceId = settings.arguments as int;
+                    } else if (settings.arguments is Map) {
+                      final args = settings.arguments as Map;
+                      spaceId = args['spaceId'] is int ? args['spaceId'] : int.tryParse(args['spaceId'].toString());
+                      spaceName = args['spaceName']?.toString();
+                    }
+                  }
+
+                  if (spaceId != null) {
+                    return MaterialPageRoute(
+                      builder: (context) => BookingPage(
+                        spaceId: spaceId!,
+                        spaceName: spaceName,
+                      ),
+                    );
+                  } else {
+                    return MaterialPageRoute(
+                      builder: (context) => Scaffold(
+                        appBar: AppBar(title: const Text("Error")),
+                        body: const Center(child: Text("Invalid or missing spaceId")),
+                      ),
+                    );
+                  }
+                }
+
 
                 final routes = {
                   '/': (context) => const IntroSliderScreen(),

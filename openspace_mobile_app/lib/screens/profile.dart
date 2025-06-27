@@ -5,7 +5,7 @@ import 'package:openspace_mobile_app/screens/edit_profile.dart';
 import 'package:openspace_mobile_app/screens/pop_card.dart';
 import 'package:provider/provider.dart';
 import '../service/ProfileService.dart';
-import '../widget/access_denied_dialog.dart';
+import '../utils/alert/access_denied_dialog.dart';
 import 'bookings.dart';
 import '../providers/user_provider.dart';
 
