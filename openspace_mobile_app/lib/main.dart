@@ -12,6 +12,8 @@ import 'package:openspace_mobile_app/screens/home_page.dart';
 import 'package:openspace_mobile_app/screens/terms_and_conditions.dart';
 import 'package:openspace_mobile_app/screens/userreports.dart';
 import 'package:openspace_mobile_app/service/auth_service.dart';
+import 'package:openspace_mobile_app/utils/alert/access_denied_dialog.dart';
+import 'package:openspace_mobile_app/utils/alert/error_dialog.dart';
 import 'package:openspace_mobile_app/utils/permission.dart';
 import 'package:provider/provider.dart';
 import 'package:openspace_mobile_app/providers/user_provider.dart';
@@ -70,23 +72,8 @@ class MyApp extends StatelessWidget {
                 if (protectedRoutes.contains(settings.name)) {
                   final userProvider = Provider.of<UserProvider>(context, listen: false);
                   if (userProvider.user.isAnonymous) {
-                    return MaterialPageRoute(
-                      builder: (context) => Scaffold(
-                        appBar: AppBar(title: const Text("Access Denied")),
-                        body: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text("Please log in to access this feature."),
-                              ElevatedButton(
-                                onPressed: () => Navigator.pushNamed(context, '/login'),
-                                child: const Text("Log In"),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
+                    showAccessDeniedDialog(context, featureName: settings.name!.split('/').last);
+                    return null;
                   }
                 }
 
@@ -172,12 +159,8 @@ class MyApp extends StatelessWidget {
                 }
 
                 print("Route ${settings.name} not found, showing default PageNotFound.");
-                return MaterialPageRoute(
-                  builder: (context) => Scaffold(
-                    appBar: AppBar(title: const Text("Error")),
-                    body: const Center(child: Text("Page not found")),
-                  ),
-                );
+                showErrorDialog(context, routeName: settings.name ?? "unknown");
+                return null;
               },
             ),
           );

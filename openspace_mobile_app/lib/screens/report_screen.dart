@@ -73,8 +73,9 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
     } catch (e) {
       if (mounted) {
         _showErrorAlert(
-          "Error picking images: ${e.toString().split(':').last.trim()}",
+          "Error picking images",
         );
+        print("Error picking images: $e");
       }
     }
   }
@@ -113,8 +114,9 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
     } catch (e) {
       if (mounted) {
         _showErrorAlert(
-          "Error picking files: ${e.toString().split(':').last.trim()}",
+          "Error picking files",
         );
+        print("Error picking files: $e");
       }
     }
   }
@@ -429,25 +431,25 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
                   ),
                   const SizedBox(height: 16),
 
-                  TextFormField(
-                    controller: _phoneController,
-                    enabled: !_isSubmittingOverall,
-                    decoration: _textFieldDecoration(
-                      labelText: 'Phone Number (Optional)',
-                      hintText: 'Enter your phone number',
-                      prefixIcon: Icons.phone_outlined,
-                    ),
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return null; // Optional field
-                      }
-                      if (!RegExp(r'^\+?([0-9\s-]{7,15})$').hasMatch(value)) {
-                        return 'Please enter a valid phone number';
-                      }
-                      return null;
-                    },
-                  ),
+                  // TextFormField(
+                  //   controller: _phoneController,
+                  //   enabled: !_isSubmittingOverall,
+                  //   decoration: _textFieldDecoration(
+                  //     labelText: 'Phone Number (Optional)',
+                  //     hintText: 'Enter your phone number',
+                  //     prefixIcon: Icons.phone_outlined,
+                  //   ),
+                  //   keyboardType: TextInputType.phone,
+                  //   validator: (value) {
+                  //     if (value == null || value.isEmpty) {
+                  //       return null; // Optional field
+                  //     }
+                  //     if (!RegExp(r'^\+?([0-9\s-]{7,15})$').hasMatch(value)) {
+                  //       return 'Please enter a valid phone number';
+                  //     }
+                  //     return null;
+                  //   },
+                  // ),
                   const SizedBox(height: 16),
                   DescriptionSection(
                     controller: _descriptionController,

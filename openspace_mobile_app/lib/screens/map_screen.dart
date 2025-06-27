@@ -101,7 +101,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           _errorMessage = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching open spaces: $_errorMessage')),
+          SnackBar(content: Text('Error fetching open spaces')),
+
         );
       }
       if (kDebugMode) {
@@ -156,11 +157,11 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error getting user location: $e');
+        print('Error getting user location');
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Location error: ${e.toString().replaceFirst('Exception: ', '')}")),
+          SnackBar(content: Text("Location error")),
         );
       }
     }
@@ -215,7 +216,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           _selectedAreaName = "Unknown Area";
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error fetching area name: ${e.toString().replaceFirst('Exception: ', '')}")),
+          SnackBar(content: Text("Error fetching area name")),
         );
       }
       if (kDebugMode) {
@@ -237,7 +238,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   void _bookSpace() {
     if (_selectedSpace == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No space selected for booking.")),
+        const SnackBar(content: Text("No space selected for booking.")),//warning alert needed
       );
       return;
     }
@@ -255,7 +256,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           print('Invalid space ID: ${_selectedSpace!.id}');
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error: Invalid space ID for booking.")),
+          const SnackBar(content: Text("Error: Invalid space ID for booking.")),//error alert needed
         );
         return;
       }
@@ -300,7 +301,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cannot report without location data.")),
+        const SnackBar(content: Text("Pinpointed area is not a Public open space")),
       );
     }
   }
@@ -329,7 +330,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           "Directions to ${_selectedAreaName ?? 'selected location'}:\n"
               "Straight-line distance: $distanceInKm km.\n"
               "(Implement a directions API for detailed navigation.)",
-        ),
+        ),//info quick alert needed
         duration: const Duration(seconds: 5),
       ),
     );
@@ -675,10 +676,10 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.black87,
         onTap: (index) {
           if (index == _selectedIndex) return;
 
