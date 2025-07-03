@@ -71,8 +71,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.black87,
+        selectedItemColor: AppConstants.primaryBlue,
+        unselectedItemColor: Colors.black38,
       onTap: (index) {
         if (index == _selectedIndex) return; // Already on this page
 

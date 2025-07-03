@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class GraphQLService {
   late GraphQLClient client;
 
-  GraphQLService({String endpoint ='http://172.20.7.188:8000/graphql/'}) {
+  GraphQLService({String endpoint ='http://172.16.211.7:8000/graphql/'}) {
     final httpLink = HttpLink(
       endpoint,
       httpClient: TimeoutHttpClient(const Duration(seconds: 60)),
@@ -54,7 +54,7 @@ class GraphQLService {
       return result;
     } catch (e) {
       print('[GraphQL QUERY ERROR]: $e');
-      throw Exception('Query failed: $e');
+      throw Exception('Query failed');
     }
   }
 

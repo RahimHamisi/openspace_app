@@ -679,7 +679,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.black87,
+        unselectedItemColor: Colors.black38,
         onTap: (index) {
           if (index == _selectedIndex) return;
 

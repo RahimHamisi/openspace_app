@@ -73,7 +73,9 @@ class MyApp extends StatelessWidget {
                   final userProvider = Provider.of<UserProvider>(context, listen: false);
                   if (userProvider.user.isAnonymous) {
                     showAccessDeniedDialog(context, featureName: settings.name!.split('/').last);
-                    return null;
+                  }
+                  else  {
+                    Navigator.pushNamed(context, settings.name!);
                   }
                 }
 

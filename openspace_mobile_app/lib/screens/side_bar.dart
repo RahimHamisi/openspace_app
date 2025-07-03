@@ -65,7 +65,7 @@ class Sidebar extends StatelessWidget {
   // Function to build menu items dynamically
   Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue, size: 28),
+      leading: Icon(icon, color: AppConstants.primaryBlue, size: 28),
       title: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
       onTap: onTap,
     );
