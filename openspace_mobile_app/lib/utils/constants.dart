@@ -5,9 +5,9 @@ class AppConstants {
   static const lightAccent = Color(0xFF64B5F6);
   static const white = Color(0xFFFFFFFF);
   static const black = Color(0xFF212121);
-  static const grey = Color(0xFF757575);
+  static const grey = Color(0xFF504B4B);
   static const lightGrey = Color(0xFFF5F5F5);
-  static const purple=Colors.purple;
+  static const purple=Color(0xFFD529DC);
   static const String appName = 'Open Space App';
 
   // Dark theme

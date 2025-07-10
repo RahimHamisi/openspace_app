@@ -31,7 +31,7 @@ import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initHiveForFlutter(); // Required for GraphQL caching
+  await initHiveForFlutter();
   await requestNotificationPermission();
   runApp(const MyApp());
 }
@@ -72,23 +72,17 @@ class MyApp extends StatelessWidget {
                   '/edit-profile',
                   '/bookings-list',
                   '/userReports',
-                  // Add any other routes that require login
                 ];
 
                 // Handle protected routes for anonymous users
                 if (protectedRoutes.contains(settings.name) &&
                     userProvider.user.isAnonymous) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    showAccessDeniedDialog(context, featureName: settings.name!.split('/').last);
+                   showAccessDeniedDialog(context, featureName: settings.name!.split('/').last);
                   });
                   // Return a valid route (e.g., a placeholder, a login screen, or an access denied screen)
                   return MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text("Access Denied. Please log in."))));
                 }
-
-
-                // --- Specific Route Handlers ---
-
-                // Handle /report-issue specifically to pass arguments
                 if (settings.name == '/report-issue') {
                   final args = settings.arguments as Map<String, dynamic>?;
                   print("onGenerateRoute for /report-issue, args: $args");
@@ -109,7 +103,6 @@ class MyApp extends StatelessWidget {
                   );
                 }
 
-                // Handle /reset-password
                 if (settings.name != null &&
                     settings.name!.startsWith('/reset-password')) {
                   final uri = Uri.parse(settings.name!);
@@ -125,32 +118,23 @@ class MyApp extends StatelessWidget {
                     );
                   }
                 }
-
-                // Handle booking page with spaceId and optional spaceName
                 if (settings.name != null && settings.name!.startsWith('/book')) {
                   final uri = Uri.parse(settings.name!);
-                  int? spaceId; // Keep as nullable for extraction
+                  int? spaceId;
                   String? spaceName;
-
-                  // Extract spaceId from the route path (e.g., /book/123)
                   if (uri.pathSegments.length == 2 &&
                       uri.pathSegments[0] == 'book') {
                     try {
                       spaceId = int.parse(uri.pathSegments[1]);
                     } catch (e) {
                       print("Invalid spaceId format in path: ${uri.pathSegments[1]}");
-                      // spaceId remains null
                     }
                   }
-
-                  // Extract spaceId and spaceName from arguments if provided
-                  // This will override spaceId from path if 'spaceId' is in args
                   if (settings.arguments != null) {
-                    if (settings.arguments is int) { // Direct int argument
+                    if (settings.arguments is int) {
                       spaceId = settings.arguments as int;
                     } else if (settings.arguments is Map) {
                       final args = settings.arguments as Map;
-                      // Try to parse 'spaceId' from args, it could be int or String
                       if (args['spaceId'] != null) {
                         if (args['spaceId'] is int) {
                           spaceId = args['spaceId'] as int;
@@ -162,10 +146,10 @@ class MyApp extends StatelessWidget {
                     }
                   }
 
-                  if (spaceId != null) { // Check if spaceId is non-null
+                  if (spaceId != null) {
                     return MaterialPageRoute(
                       builder: (context) => BookingPage(
-                        spaceId: spaceId!, // Use the bang operator here because we've checked for null
+                        spaceId: spaceId!,
                         spaceName: spaceName,
                       ),
                     );

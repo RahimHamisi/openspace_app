@@ -30,7 +30,7 @@ class TextFormatBar extends StatelessWidget {
   Widget _buildFormatButton(IconData icon) {
     return IconButton(
       icon: Icon(icon, size: 18),
-      onPressed: () {}, // ✅ Add functionality here
+      onPressed: () {},
       color: Colors.grey.shade700,
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(),

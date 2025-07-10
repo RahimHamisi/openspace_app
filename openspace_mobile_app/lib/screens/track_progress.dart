@@ -43,8 +43,6 @@ class _TrackProgressScreenState extends State<TrackProgressScreen> {
     });
 
     try {
-      // Assuming getAllReports fetches all and then you filter client-side.
-      // If you have a service method like getReportById(enteredRefId), that would be more efficient.
       final reports = await _openSpaceService.getAllReports();
       Report? matchingReport;
       try {
@@ -52,7 +50,6 @@ class _TrackProgressScreenState extends State<TrackProgressScreen> {
               (report) => report.reportId == enteredRefId,
         );
       } catch (e) {
-        // firstWhere throws if no element is found and orElse is not provided or orElse returns null.
         matchingReport = null;
       }
 
@@ -76,7 +73,6 @@ class _TrackProgressScreenState extends State<TrackProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Local variable for cleaner access inside the build method when reportData is not null
     final Report? currentReport = reportData;
 
     return Scaffold(
@@ -188,33 +184,10 @@ class _TrackProgressScreenState extends State<TrackProgressScreen> {
       );
     }
 
-    // --- Null-safe access and defaults for reportData fields ---
-    // final String reportType = (currentReport.type != null && currentReport.type!.isNotEmpty)
-    //     ? currentReport.type!
-    //     : 'Issue Report';
 
     final String spaceName = currentReport.spaceName ?? 'N/A';
-
-    // Fix for Date: Use createdAt directly as it's already DateTime
     final String formattedDate = DateFormat('MMMM dd, yyyy').format(currentReport.createdAt.toLocal());
-
-    // final String status = currentReport.status ?? 'Unknown';
-    // Color statusColor;
-    // switch (status) {
-    //   case 'Ref Sm': // Assuming this is one of your actual status strings
-    //     statusColor = Colors.red;
-    //     break;
-    //   case 'Pending':
-    //     statusColor = Colors.orange;
-    //     break;
-    //   case 'Resolved': // Example, adjust to your actual status
-    //     statusColor = Colors.green;
-    //     break;
-    //   default:
-    //     statusColor = Colors.grey;
-    // }
     final String description = currentReport.description;
-
     final String? fileUrl = currentReport.file;
     final bool hasAttachment = fileUrl != null && fileUrl.isNotEmpty;
     final String attachmentName = hasAttachment ? fileUrl.split('/').last : "No attachments available";
@@ -233,9 +206,6 @@ class _TrackProgressScreenState extends State<TrackProgressScreen> {
                 children: [
                   const Icon(Icons.report_problem, size: 24, color: Colors.blue),
                   const SizedBox(width: 8),
-                  // Text(
-                  //   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  // ),
                 ],
               ),
               const SizedBox(height: 12),

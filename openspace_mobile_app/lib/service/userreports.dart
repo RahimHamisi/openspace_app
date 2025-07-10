@@ -5,7 +5,7 @@ import '../model/Report.dart';
 import 'auth_service.dart';
 
 class ReportService {
-  static const String baseUrl = 'http://192.168.1.169:8000';
+  static const String baseUrl = 'http://172.16.73.139:8000';
   static const String endpoint = '/api/v1/user-reports/';
 
   Future<List<Report>> fetchUserReports() async {
