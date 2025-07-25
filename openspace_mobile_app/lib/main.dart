@@ -22,7 +22,6 @@ import 'package:openspace_mobile_app/screens/terms_and_conditions.dart';
 import 'package:openspace_mobile_app/screens/theme_change.dart';
 import 'package:openspace_mobile_app/screens/track_progress.dart';
 import 'package:openspace_mobile_app/screens/userreports.dart';
-// import 'package:openspace_mobile_app/service/auth_service.dart'; // Uncomment if used directly
 import 'package:openspace_mobile_app/utils/alert/access_denied_dialog.dart';
 import 'package:openspace_mobile_app/utils/alert/error_dialog.dart';
 import 'package:openspace_mobile_app/utils/permission.dart';

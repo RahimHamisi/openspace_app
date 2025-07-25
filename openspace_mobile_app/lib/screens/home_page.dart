@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:openspace_mobile_app/screens/side_bar.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:openspace_mobile_app/widget/custom_navigation_bar.dart';
+
 
 
 class HomePage extends StatefulWidget {
@@ -13,6 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   bool _isSidebarOpen = false;
   int _selectedIndex = 0;
+  int _currentIndex = 0;
 
 
   final List<_CardData> _cards = const [
@@ -26,6 +30,22 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
 
+  }
+  void _onNavTap(int index) {
+    if (index == _currentIndex) return;
+    setState(() => _currentIndex = index);
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/map');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/user-profile');
+        break;
+    }
   }
 
 
@@ -68,41 +88,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
            // Sidebar now full height & half width
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        currentIndex: _selectedIndex,
-        selectedItemColor: AppConstants.primaryBlue,
-        unselectedItemColor: Colors.black38,
-      onTap: (index) {
-        if (index == _selectedIndex) return; // Already on this page
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onNavTap,
+      )
 
-        switch (index) {
-          case 0:
-            Navigator.pushReplacementNamed(context, '/home');
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/map');
-            break;
-          case 2:
-            Navigator.pushReplacementNamed(context, '/user-profile');
-            break;
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.explore),
-          label: 'Explore',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
-    ),
+
 
     );
   }

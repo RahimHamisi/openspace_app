@@ -1,7 +1,5 @@
 
 import 'dart:core';
-import 'dart:nativewrappers/_internal/vm_shared/lib/bool_patch.dart';
-
 import 'package:flutter/material.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';

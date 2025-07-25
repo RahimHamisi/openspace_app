@@ -9,10 +9,15 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import '../model/openspace.dart';
 import '../service/openspace_service.dart';
+import '../utils/constants.dart';
 import '../utils/location_service.dart';
 import '../utils/map_utils.dart';
 import '../utils/alert/access_denied_dialog.dart';
 import '../providers/user_provider.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+
+import '../widget/custom_navigation_bar.dart';
+
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -37,6 +42,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   int _selectedIndex = 1;
   bool _isLoading = true;
   String? _errorMessage;
+  int _currentIndex = 1;
 
   @override
   void initState() {
@@ -75,6 +81,22 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         print('Location stream error: $e');
       }
     });
+  }
+  void _onNavTap(int index) {
+    if (index == _currentIndex) return;
+    setState(() => _currentIndex = index);
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/map');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/user-profile');
+        break;
+    }
   }
 
   Future<void> _fetchOpenSpaces() async {
@@ -675,32 +697,11 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.black38,
-        onTap: (index) {
-          if (index == _selectedIndex) return;
-
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/map');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/user-profile');
-              break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+      bottomNavigationBar:CustomBottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onNavTap,
       ),
+
     );
   }
 

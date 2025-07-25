@@ -6,8 +6,10 @@ import 'package:openspace_mobile_app/screens/pop_card.dart';
 import 'package:provider/provider.dart';
 import '../service/ProfileService.dart';
 import '../utils/alert/access_denied_dialog.dart';
+import '../widget/custom_navigation_bar.dart';
 import 'bookings.dart';
 import '../providers/user_provider.dart';
+
 
 
 class UserProfilePage extends StatefulWidget {
@@ -21,6 +23,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Map<String, dynamic>? _profile;
   bool _isLoading = true;
   String? _error;
+  int _currentIndex = 2;
 
   @override
   void initState() {
@@ -80,6 +83,22 @@ class _UserProfilePageState extends State<UserProfilePage> {
       }
     }
   }
+  void _onNavTap(int index) {
+    if (index == _currentIndex) return;
+    setState(() => _currentIndex = index);
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/map');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/user-profile');
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,68 +107,90 @@ class _UserProfilePageState extends State<UserProfilePage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showAccessDeniedDialog(context, featureName: "profile");
       });
-      return Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppConstants.primaryBlue,
-          title: const Text(
-            'Profile',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppConstants.white,
+      return Container(
+        color: AppConstants.primaryBlue,
+        child: SafeArea(
+          top: false,
+          child: ClipRect(
+            child: Scaffold(
+              appBar: AppBar(
+                backgroundColor: AppConstants.primaryBlue,
+                title: const Text(
+                  'Profile',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppConstants.white,
+                  ),
+                ),
+                centerTitle: true,
+              ),
+              body: const Center(
+                child: Text("Please log in to view your profile."),
+              ),
+              bottomNavigationBar: CustomBottomNavBar(
+                currentIndex: _currentIndex,
+                onTap: _onNavTap,
+              ),
             ),
           ),
-          centerTitle: true,
         ),
-        body: const Center(
-          child: Text("Please log in to view your profile."),
-        ),
-        bottomNavigationBar: _buildBottomNavigationBar(context),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppConstants.primaryBlue,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppConstants.white),
-          onPressed: () {
-            Navigator.pushReplacementNamed(context, '/home');
-          },
-        ),
-        title: const Text(
-          'Profile',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: AppConstants.white,
+    return Container(
+      color: AppConstants.primaryBlue,
+      child: SafeArea(
+        top: false,
+        child: ClipRect(
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: AppConstants.primaryBlue,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: AppConstants.white),
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/home');
+                },
+              ),
+              title: const Text(
+                'Profile',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppConstants.white,
+                ),
+              ),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: AppConstants.white),
+                  onPressed: _isLoading ? null : _fetchProfile,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit, color: AppConstants.white),
+                  onPressed: _isLoading || _error != null
+                      ? null
+                      : () {
+                    if (_profile != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EditProfilePage(),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+            body: _buildBody(),
+            bottomNavigationBar:CustomBottomNavBar(
+            currentIndex: _currentIndex,
+            onTap: _onNavTap,
+          ),
           ),
         ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppConstants.white),
-            onPressed: _isLoading ? null : _fetchProfile,
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit, color: AppConstants.white),
-            onPressed: _isLoading || _error != null
-                ? null
-                : () {
-              if (_profile != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const EditProfilePage(),
-                  ),
-                );
-              }
-            },
-          ),
-        ],
       ),
-      body: _buildBody(),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
@@ -412,32 +453,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    int currentIndex = 2;
-    return BottomNavigationBar(
-      backgroundColor: AppConstants.primaryBlue,
-      type: BottomNavigationBarType.fixed,
-      currentIndex: currentIndex,
-      selectedItemColor: AppConstants.white,
-      unselectedItemColor: AppConstants.white.withOpacity(0.7),
-      onTap: (index) {
-        if (index == currentIndex) return;
-        switch (index) {
-          case 0:
-            Navigator.pushReplacementNamed(context, '/home');
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/map');
-            break;
-          case 2:
-            break;
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-      ],
-    );
-  }
+
+
+
+
 }

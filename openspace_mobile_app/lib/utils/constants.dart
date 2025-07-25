@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   static const primaryBlue = Color(0xFF1976D2);
+  static const primaryBlueOpacity = Color(0xE61976D2);
   static const lightAccent = Color(0xFF64B5F6);
   static const white = Color(0xFFFFFFFF);
   static const black = Color(0xFF212121);
