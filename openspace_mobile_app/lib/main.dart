@@ -18,6 +18,7 @@ import 'package:openspace_mobile_app/screens/report_screen.dart'; // Assuming th
 import 'package:openspace_mobile_app/screens/reported_issue.dart'; // This is your ReportIssuePage
 import 'package:openspace_mobile_app/screens/settings_page.dart';
 import 'package:openspace_mobile_app/screens/sign_in.dart';
+import 'package:openspace_mobile_app/screens/sign_up.dart';
 import 'package:openspace_mobile_app/screens/terms_and_conditions.dart';
 import 'package:openspace_mobile_app/screens/theme_change.dart';
 import 'package:openspace_mobile_app/screens/track_progress.dart';
@@ -171,7 +172,7 @@ class MyApp extends StatelessWidget {
                   '/': (context) => const IntroSliderScreen(),
                   '/home': (context) => const HomePage(),
                   '/login': (context) => const SignInScreen(),
-                  '/register': (context) => const SignInScreen(), // Assuming same as login for now
+                  '/register': (context) => const SignUpScreen(), // Assuming same as login for now
                   // '/report-issue' is handled above
                   '/track-progress': (context) => const TrackProgressScreen(),
                   '/user-profile': (context) => const UserProfilePage(),

@@ -34,6 +34,7 @@ class _SignInScreenState extends State<SignInScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
 
     void _showAlert(QuickAlertType type, String message,
         {VoidCallback? onConfirmed}) {
@@ -251,10 +252,3 @@ class _SignInScreenState extends State<SignInScreen> {
       );
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
-}

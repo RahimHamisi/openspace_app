@@ -123,6 +123,8 @@ flutter:
      - assets/images/error_removed.png
      - assets/icon/icon.png
      - assets/translate/translation.json
+     - assets/images/green_space.jpg
+     - assets/images/green_space2.jpg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
