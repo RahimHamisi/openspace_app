@@ -15,9 +15,7 @@ import '../utils/map_utils.dart';
 import '../utils/alert/access_denied_dialog.dart';
 import '../providers/user_provider.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-
 import '../widget/custom_navigation_bar.dart';
-
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -82,6 +80,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       }
     });
   }
+
   void _onNavTap(int index) {
     if (index == _currentIndex) return;
     setState(() => _currentIndex = index);
@@ -124,7 +123,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error fetching open spaces')),
-
         );
       }
       if (kDebugMode) {
@@ -225,11 +223,11 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
           backgroundColor: Colors.white,
-          isScrollControlled: true, // Allow dynamic height
+          isScrollControlled: true,
           builder: (context) => _buildBottomSheetContent(),
         );
         if (mounted) {
-          _closePopup(); // Reset state after sheet closes
+          _closePopup();
         }
       }
     } catch (e) {
@@ -260,7 +258,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   void _bookSpace() {
     if (_selectedSpace == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No space selected for booking.")),//warning alert needed
+        const SnackBar(content: Text("No space selected for booking.")),
       );
       return;
     }
@@ -278,7 +276,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           print('Invalid space ID: ${_selectedSpace!.id}');
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error: Invalid space ID for booking.")),//error alert needed
+          const SnackBar(content: Text("Error: Invalid space ID for booking.")),
         );
         return;
       }
@@ -352,13 +350,25 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           "Directions to ${_selectedAreaName ?? 'selected location'}:\n"
               "Straight-line distance: $distanceInKm km.\n"
               "(Implement a directions API for detailed navigation.)",
-        ),//info quick alert needed
+        ),
         duration: const Duration(seconds: 5),
       ),
     );
   }
 
   Widget _buildBottomSheetContent() {
+    // Hardcoded static images and amenities for demonstration
+    const List<String> hardcodedImages = [
+      'https://picsum.photos/150/150?random=1',
+      'https://picsum.photos/150/150?random=2',
+      'https://picsum.photos/150/150?random=3',
+    ];
+    const List<String> hardcodedAmenities = [
+      'Parking',
+      'Restrooms',
+      'Playground',
+    ];
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -387,6 +397,36 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               onPressed: () => Navigator.pop(context),
             ),
           ),
+          // Image Gallery
+          SizedBox(
+            height: 150,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: hardcodedImages.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      hardcodedImages[index],
+                      fit: BoxFit.cover,
+                      width: 150,
+                      height: 150,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Container(
+                            width: 150,
+                            height: 150,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.error, color: Colors.red),
+                          ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
           // Area name
           Text(
             _selectedAreaName ?? "Unknown Area",
@@ -426,6 +466,29 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               "Status",
               _selectedSpace!.status,
               valueColor: _selectedSpace!.isAvailable ? Colors.green : Colors.red,
+            ),
+            // Amenities
+            const SizedBox(height: 12),
+            const Text(
+              "Amenities",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 4.0,
+              children: hardcodedAmenities.map((amenity) {
+                return Chip(
+                  label: Text(amenity),
+                  backgroundColor: AppConstants.primaryBlue.withOpacity(0.1),
+                  labelStyle: const TextStyle(color: AppConstants.primaryBlue),
+                );
+              }).toList(),
             ),
           ],
           const SizedBox(height: 16),
@@ -650,7 +713,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     .toList();
                 final locationSuggestions =
                 await _locationService.searchLocation(pattern);
-                return [...backendSuggestions, ...locationSuggestions];
+                return [...backendSuggestions,];
               },
               itemBuilder: (context, suggestion) => ListTile(
                 leading: const Icon(Icons.location_on),
@@ -697,11 +760,10 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      bottomNavigationBar:CustomBottomNavBar(
+      bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
       ),
-
     );
   }
 
@@ -754,4 +816,25 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       ),
     );
   }
+}
+
+void zoomIn(MapController mapController) {
+  final currentZoom = mapController.camera.zoom;
+  if (currentZoom < 19.0) {
+    mapController.move(mapController.camera.center, currentZoom + 1);
+  }
+}
+
+void zoomOut(MapController mapController) {
+  final currentZoom = mapController.camera.zoom;
+  if (currentZoom > 6.0) {
+    mapController.move(mapController.camera.center, currentZoom - 1);
+  }
+}
+
+class LocationSuggestion {
+  final String name;
+  final LatLng position;
+
+  LocationSuggestion({required this.name, required this.position});
 }

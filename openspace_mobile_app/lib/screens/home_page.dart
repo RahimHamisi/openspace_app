@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:openspace_mobile_app/screens/side_bar.dart';
 import 'package:openspace_mobile_app/utils/constants.dart';
@@ -20,11 +21,13 @@ class _CardData {
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   bool _isSidebarOpen = false;
   int _currentIndex = 0;
+  int _carouselIndex = 0;
   double _spacerHeight = 20.0;
   final PageController _pageController = PageController();
   int _notificationCount = 0;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  Timer? _autoScrollTimer;
 
   final List<_CardData> _cards = const [
     _CardData(iconPath: 'assets/images/report1.jpg', title: 'Report Unusual Activity', route: '/map'),
@@ -50,22 +53,41 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-
     _animationController.forward();
 
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) setState(() => _spacerHeight = 40.0);
     });
+
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _notificationCount = 1);
     });
+
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) setState(() => _notificationCount = 0);
+    });
+
+    // Auto scroll for carousel
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_pageController.hasClients && mounted) {
+        int next = (_pageController.page?.round() ?? 0) + 1;
+        if (next >= _horizontalImages.length) next = 0;
+        _pageController.animateToPage(
+          next,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
     });
   }
 
   @override
   void dispose() {
+    _autoScrollTimer?.cancel();
     _pageController.dispose();
     _animationController.dispose();
     super.dispose();
@@ -90,40 +112,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       drawer: const Sidebar(),
       body: CustomScrollView(
         slivers: [
-          // Enhanced App Bar
-          _buildAppBar(),
-
-          // Animated Spacer
-          SliverToBoxAdapter(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-              height: _spacerHeight,
-            ),
-          ),
-
-          // Welcome Section with better styling
+          _buildEnhancedAppBar(screenWidth, screenHeight),
+          SliverToBoxAdapter(child: AnimatedContainer(height: _spacerHeight, duration: const Duration(milliseconds: 500))),
           _buildWelcomeSection(),
-
-          // Image Carousel with indicators
-          _buildImageCarousel(screenWidth),
-
-          // Section Title
           _buildSectionTitle('Quick Actions'),
-
-          // Action Cards Grid
-          _buildActionCards(screenWidth),
-
-          // Additional spacing at bottom
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 20),
-          ),
+          _buildActionCards(),
+          const SliverToBoxAdapter(child: SizedBox(height: 20)),
         ],
       ),
       bottomNavigationBar: CustomBottomNavBar(
@@ -133,122 +134,197 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildEnhancedAppBar(double screenWidth, double screenHeight) {
     return SliverAppBar(
       backgroundColor: AppConstants.primaryBlue,
-      elevation: 0,
-      expandedHeight: 180.0,
-      floating: false,
+      expandedHeight: screenHeight * 0.45, // Matches the reference image's height proportion
       pinned: true,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-        title: Center(
-          child: const Text(
+      elevation: 0,
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(Icons.menu, color: Colors.white, size: 24), // Menu icon for drawer
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
+      ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.account_balance,
+            color: Colors.white,
+            size: 22,
+          ),
+          const SizedBox(width: 8),
+          const Text(
             'OpenSpace',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.white,
-              letterSpacing: 0.5,
+              letterSpacing: 1.2,
             ),
           ),
+        ],
+      ),
+      centerTitle: true,
+      actions: [
+        Stack(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_none, color: Colors.white, size: 24),
+              onPressed: () => setState(() => _notificationCount = 0),
+            ),
+            if (_notificationCount > 0)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '$_notificationCount',
+                    style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+          ],
         ),
+        const SizedBox(width: 8),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
               colors: [
                 AppConstants.primaryBlue,
                 AppConstants.primaryBlue.withOpacity(0.8),
+                AppConstants.primaryBlue.withOpacity(0.9),
               ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
           child: Stack(
             children: [
-              Positioned(
-                right: -50,
-                top: -50,
+              // Image Carousel with adjusted height
+              Positioned.fill(
+                top: 100, // Adjusted to match the reference image's layout
                 child: Container(
-                  width: 150,
-                  height: 150,
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: _horizontalImages.length,
+                      onPageChanged: (index) => setState(() => _carouselIndex = index),
+                      itemBuilder: (context, index) {
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.asset(
+                              _horizontalImages[index],
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.high,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.black.withOpacity(0.3),
+                                    Colors.transparent,
+                                    Colors.black.withOpacity(0.5),
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 20,
+                              left: 20,
+                              right: 20,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Dar es Salaam Open Spaces',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      shadows: [
+                                        Shadow(
+                                          offset: const Offset(0, 2),
+                                          blurRadius: 4,
+                                          color: Colors.black54,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Building stronger communities together',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: 14,
+                                      shadows: [
+                                        Shadow(
+                                          offset: const Offset(0, 1),
+                                          blurRadius: 2,
+                                          color: Colors.black54,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
               Positioned(
-                right: 20,
-                bottom: 60,
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    shape: BoxShape.circle,
-                  ),
+                bottom: 30,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_horizontalImages.length, (index) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _carouselIndex == index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _carouselIndex == index
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    );
+                  }),
                 ),
               ),
             ],
           ),
         ),
       ),
-      leading: Builder(
-        builder: (context) => Container(
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white, size: 24),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 24),
-                  onPressed: () => setState(() => _notificationCount = 0),
-                ),
-                if (_notificationCount > 0)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFF4757),
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                      child: Text(
-                        _notificationCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -257,17 +333,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: Container(
-          margin: const EdgeInsets.all(20),
-          padding: const EdgeInsets.all(20),
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 10,
-                offset: const Offset(0, 2),
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -277,34 +352,50 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppConstants.primaryBlue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.waves,
+                      Icons.park,
                       color: AppConstants.primaryBlue,
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Welcome to OpenSpace!',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Welcome to OpenSpace!',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2C3E50),
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Dar es Salaam',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Your community hub for managing open spaces. Report issues, track progress, and book spaces with ease.',
+              const SizedBox(height: 16),
+              const Text(
+                'Your community hub for managing open spaces. Report issues, track progress, and book spaces with ease. Together, we\'re building a better Dar es Salaam.',
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+                  fontSize: 15,
+                  color: Colors.black87,
                   height: 1.5,
                 ),
               ),
@@ -315,67 +406,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildImageCarousel(double screenWidth) {
-    return SliverToBoxAdapter(
-      child: Container(
-        height: 180,
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: _horizontalImages.length,
-          itemBuilder: (context, index) {
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.asset(
-                      _horizontalImages[index],
-                      fit: BoxFit.cover,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.3),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildSectionTitle(String title) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           children: [
             Container(
               width: 4,
-              height: 24,
+              height: 28,
               decoration: BoxDecoration(
                 color: AppConstants.primaryBlue,
                 borderRadius: BorderRadius.circular(2),
@@ -385,9 +424,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             Text(
               title,
               style: const TextStyle(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2C3E50),
+                color: Color(0xFFA19999),
               ),
             ),
           ],
@@ -396,94 +435,78 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildActionCards(double screenWidth) {
+  Widget _buildActionCards() {
     return SliverToBoxAdapter(
-      child: Container(
-        height: 160,
-        margin: const EdgeInsets.symmetric(horizontal: 10),
+      child: SizedBox(
+        height: 180,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          physics: const BouncingScrollPhysics(), // Add explicit scroll physics
           itemCount: _cards.length,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           itemBuilder: (context, index) {
-            return Container(
-              width: 140,
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              child: _buildEnhancedCard(context, _cards[index], index),
+            final card = _cards[index];
+            return GestureDetector(
+              onTap: () => Navigator.pushNamed(context, card.route),
+              child: Container(
+                width: 160, // Fixed width for each card
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppConstants.primaryBlue.withOpacity(0.1), // Fixed gradient issue
+                      AppConstants.primaryBlue.withOpacity(0.3),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppConstants.primaryBlue.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          card.iconPath,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        card.title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEnhancedCard(BuildContext context, _CardData card, int index) {
-    final colors = [
-      const Color(0xFF667EEA),
-      const Color(0xFF764BA2),
-      const Color(0xFF2196F3),
-      const Color(0xFF43A047),
-    ];
-
-    return InkWell(
-      onTap: () => Navigator.pushNamed(context, card.route),
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colors[index % colors.length],
-              colors[index % colors.length].withOpacity(0.8),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: colors[index % colors.length].withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    card.iconPath,
-                    width: 30,
-                    height: 30,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                card.title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  height: 1.2,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
         ),
       ),
     );

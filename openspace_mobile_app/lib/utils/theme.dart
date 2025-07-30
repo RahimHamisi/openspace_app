@@ -19,6 +19,11 @@ class AppTheme {
           fontWeight: FontWeight.bold,
           color: AppConstants.primaryBlue,
         ),
+        headlineMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: AppConstants.white,
+        ),
         bodyMedium: TextStyle(
           fontSize: 16,
           color: AppConstants.black,
@@ -40,9 +45,19 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppConstants.primaryBlue,
           foregroundColor: AppConstants.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppConstants.white,
+          side: const BorderSide(color: AppConstants.white, width: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -66,6 +81,11 @@ class AppTheme {
           fontWeight: FontWeight.bold,
           color: AppConstants.lightAccent,
         ),
+        headlineMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: AppConstants.darkText,
+        ),
         bodyMedium: TextStyle(
           fontSize: 16,
           color: AppConstants.darkText,
@@ -87,9 +107,19 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppConstants.lightAccent,
           foregroundColor: AppConstants.darkBackground,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppConstants.darkText,
+          side: const BorderSide(color: AppConstants.darkText, width: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),

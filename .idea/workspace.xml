@@ -10,13 +10,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2c3a67b2-4d7b-4371-b015-86e1aac93a94" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/model/openspace.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/model/openspace.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/bookings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/bookings.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/home_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/sign_in.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/sign_in.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/intro_slider_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/intro_slider_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/map_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/map_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/onboarding_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/onboarding_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/report_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/report_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/side_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/side_bar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/splash_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/splash_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/terms_and_conditions.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/terms_and_conditions.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/track_progress.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/track_progress.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/user_type.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/user_type.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/userreports.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/screens/userreports.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openspace_mobile_app/lib/utils/theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/lib/utils/theme.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/openspace_mobile_app/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/openspace_mobile_app/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

@@ -12,6 +12,7 @@ import 'package:openspace_mobile_app/screens/description_section.dart';
 import 'package:openspace_mobile_app/screens/file_attachment_section.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import '../utils/constants.dart'; // Assumed for AppTheme consistency
 
 class ReportIssuePage extends StatefulWidget {
   final double? latitude;
@@ -37,6 +38,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
   final List<UploadableFile> _filesToUpload = [];
 
   bool _isSubmittingOverall = false;
+  bool _isGuidelinesExpanded = false;
 
   final ImagePicker _imagePicker = ImagePicker();
   final OpenSpaceService _openSpaceService = OpenSpaceService();
@@ -45,10 +47,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
   @override
   void initState() {
     super.initState();
-
   }
-
-
 
   Future<void> _pickImages() async {
     if (_isSubmittingOverall) return;
@@ -72,9 +71,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       }
     } catch (e) {
       if (mounted) {
-        _showErrorAlert(
-          "Error picking images",
-        );
+        _showErrorAlert("Error picking images");
         print("Error picking images: $e");
       }
     }
@@ -87,35 +84,32 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
         allowMultiple: true,
         withData: !kIsWeb,
         type: FileType.any,
-      ); // Ensure withData is true for non-web
+      );
       if (result != null && result.files.isNotEmpty) {
         for (var pFile in result.files) {
           if (!_filesToUpload.any((f) => f.name == pFile.name)) {
-            Uint8List? fileBytes;
+            Uint8List fileBytes;
             if (pFile.bytes != null) {
-              // For web and sometimes mobile if withData is true
-              fileBytes = pFile.bytes!;
+              fileBytes = pFile.bytes!; // Non-nullable since checked
             } else if (!kIsWeb && pFile.path != null) {
-              // For mobile if path is available
-              fileBytes = await io.File(pFile.path!).readAsBytes();
+              fileBytes = await io.File(pFile.path!).readAsBytes(); // Non-nullable return
+            } else {
+              if (mounted) _showErrorAlert("Could not read file: ${pFile.name}");
+              continue; // Skip to next file if bytes unavailable
             }
-            if (fileBytes != null && mounted) {
+            if (mounted) {
               setState(() {
                 _filesToUpload.add(
-                  UploadableFile(name: pFile.name, bytes: fileBytes!),
+                  UploadableFile(name: pFile.name, bytes: fileBytes),
                 );
               });
-            } else if (mounted) {
-              _showErrorAlert("Could not read file: ${pFile.name}");
             }
           }
         }
       }
     } catch (e) {
       if (mounted) {
-        _showErrorAlert(
-          "Error picking files",
-        );
+        _showErrorAlert("Error picking files");
         print("Error picking files: $e");
       }
     }
@@ -141,8 +135,9 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       widget: Padding(
         padding: const EdgeInsets.all(16),
         child: Text(
-          "Your report (reference_ID: $reportId) has been successfully submitted.Use This reference ID to track the progress of your report. Thank you!",
+          "Your report (Reference ID: $reportId) has been successfully submitted. Use this Reference ID to track the progress of your report. Thank you for contributing to public service improvement!",
           textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
       ),
       confirmBtnText: 'OK',
@@ -159,7 +154,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       context: context,
       type: QuickAlertType.error,
       title: 'Oops...',
-      text: message, // The refined message will be shown here
+      text: message,
       confirmBtnText: 'OK',
       confirmBtnColor: Colors.red,
       onConfirmBtnTap: () {
@@ -178,7 +173,6 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       });
     }
     _formKey.currentState?.reset();
-
   }
 
   Future<void> _submitReport() async {
@@ -216,7 +210,6 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
           String? singleUploadedPath = await _fileUploadService.uploadFile(
             fileName: fileData.name,
             fileBytes: fileData.bytes,
-            // reportId: "TEMP_ID", // Optional: If your backend needs/can handle an ID before final report creation
           );
 
           if (singleUploadedPath == null) {
@@ -231,13 +224,9 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
         String? filePathPayload =
         uploadedFilePaths.isNotEmpty ? uploadedFilePaths.join(',') : null;
         String? email =
-        _emailController.text.trim().isNotEmpty
-            ? _emailController.text.trim()
-            : null;
+        _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null;
         String? phone =
-        _phoneController.text.trim().isNotEmpty
-            ? _phoneController.text.trim()
-            : null; // Ensure your service handles this
+        _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null;
 
         final Map<String, dynamic>? reportData = await _openSpaceService
             .createReport(
@@ -252,7 +241,6 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
         if (reportData != null && reportData['reportId'] != null) {
           finalReportId = reportData['reportId'].toString();
         } else if (reportData == null && errorMessage == null) {
-          // If service returned null without throwing an error we already caught
           errorMessage =
           "Failed to submit report. Server returned incomplete data.";
         }
@@ -311,14 +299,6 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
     }
   }
 
-  @override
-  void dispose() {
-    _descriptionController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    super.dispose();
-  }
-
   InputDecoration _textFieldDecoration({
     required String labelText,
     required String hintText,
@@ -327,32 +307,28 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
     return InputDecoration(
       labelText: labelText,
       hintText: hintText,
-      prefixIcon:
-      prefixIcon != null ? Icon(prefixIcon, color: Colors.blueGrey) : null,
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppConstants.primaryBlue) : null,
       filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        vertical: 15.0,
-        horizontal: 12.0,
-      ),
+      fillColor: AppConstants.white,
+      contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(12.0),
         borderSide: BorderSide(color: Colors.grey.shade300),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(12.0),
         borderSide: BorderSide(color: Colors.grey.shade300, width: 1.0),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-        borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: BorderSide(color: AppConstants.primaryBlue, width: 2.0),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(12.0),
         borderSide: BorderSide(color: Colors.red.shade700, width: 1.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(12.0),
         borderSide: BorderSide(color: Colors.red.shade700, width: 2.0),
       ),
       labelStyle: TextStyle(color: Colors.grey.shade700),
@@ -363,120 +339,206 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppConstants.white,
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        title: const Text('Citizen Report Submission'),
+        backgroundColor: AppConstants.primaryBlue,
+        foregroundColor: AppConstants.white,
         elevation: 0,
-        title: const Text('Report an Issue'),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _isSubmittingOverall ? null : () => Navigator.pop(context),
+        leading: Semantics(
+          label: 'Back to previous screen',
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppConstants.white),
+            onPressed: _isSubmittingOverall ? null : () => Navigator.pop(context),
+            padding: const EdgeInsets.all(12.0),
+          ),
         ),
       ),
       body: AbsorbPointer(
         absorbing: _isSubmittingOverall,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.stretch,
-                children: [
-                  if (widget.spaceName != null) ...[
-                    Text(
-                      "Reporting for: ${widget.spaceName}",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (widget.spaceName != null) ...[
+                      Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        color: AppConstants.white,
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Text(
+                            "Reporting for: ${widget.spaceName}",
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppConstants.primaryBlue,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    if (widget.latitude != null && widget.longitude != null && widget.spaceName == null) ...[
+                      Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        color: AppConstants.white,
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Text(
+                            "Location: Lat: ${widget.latitude?.toStringAsFixed(5)}, Lon: ${widget.longitude?.toStringAsFixed(5)}",
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      color: AppConstants.white,
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          controller: _emailController,
+                          enabled: !_isSubmittingOverall,
+                          decoration: _textFieldDecoration(
+                            labelText: 'Email (Optional)',
+                            hintText: 'Enter your email address',
+                            prefixIcon: Icons.email_outlined,
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return null;
+                            if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
+                              return 'Please enter a valid email address';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                  ],
-                  if (widget.latitude != null &&
-                      widget.longitude != null &&
-                      widget.spaceName == null) ...[
-                    Text(
-                      "Location: Lat: ${widget.latitude?.toStringAsFixed(5)}, Lon: ${widget.longitude?.toStringAsFixed(5)}",
-                      style: const TextStyle(fontSize: 14),
+                    const SizedBox(height: 8),
+                    DescriptionSection(
+                      controller: _descriptionController,
+                      enabled: !_isSubmittingOverall,
                     ),
-                  ],
-                  if (widget.spaceName != null ||
-                      (widget.latitude != null && widget.longitude != null))
+                    const SizedBox(height: 8),
+                    FileAttachmentSection(
+                      selectedFileNames: _filesToUpload.map((f) => f.name).toList(),
+                      pickImages: _isSubmittingOverall ? null : _pickImages,
+                      pickGeneralFiles: _isSubmittingOverall ? null : _pickGeneralFiles,
+                      removeFile: _isSubmittingOverall ? null : _removeFile,
+                    ),
                     const SizedBox(height: 16),
-
-                  TextFormField(
-                    controller: _emailController,
-                    enabled: !_isSubmittingOverall,
-                    decoration: _textFieldDecoration(
-                      labelText: 'Email (Optional)',
-                      hintText: 'Enter your email address',
-                      prefixIcon: Icons.email_outlined,
+                    ActionButtons(
+                      isSubmitting: _isSubmittingOverall,
+                      submitReport: _submitReport,
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return null; // Optional field
-                      }
-                      if (!RegExp(
-                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
-                      ).hasMatch(value)) {
-                        return 'Please enter a valid email address';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // TextFormField(
-                  //   controller: _phoneController,
-                  //   enabled: !_isSubmittingOverall,
-                  //   decoration: _textFieldDecoration(
-                  //     labelText: 'Phone Number (Optional)',
-                  //     hintText: 'Enter your phone number',
-                  //     prefixIcon: Icons.phone_outlined,
-                  //   ),
-                  //   keyboardType: TextInputType.phone,
-                  //   validator: (value) {
-                  //     if (value == null || value.isEmpty) {
-                  //       return null; // Optional field
-                  //     }
-                  //     if (!RegExp(r'^\+?([0-9\s-]{7,15})$').hasMatch(value)) {
-                  //       return 'Please enter a valid phone number';
-                  //     }
-                  //     return null;
-                  //   },
-                  // ),
-                  const SizedBox(height: 16),
-                  DescriptionSection(
-                    controller: _descriptionController,
-                    enabled: !_isSubmittingOverall,
-                  ),
-                  const SizedBox(height: 12),
-                  FileAttachmentSection(
-                    selectedFileNames:
-                    _filesToUpload.map((f) => f.name).toList(),
-                    pickImages: _isSubmittingOverall ? null : _pickImages,
-                    pickGeneralFiles:
-                    _isSubmittingOverall ? null : _pickGeneralFiles,
-                    removeFile: _isSubmittingOverall ? null : _removeFile,
-                  ),
-                  const SizedBox(height: 24),
-                  ActionButtons(
-                    isSubmitting: _isSubmittingOverall,
-                    submitReport: _submitReport,
-                  ),
-                  const SizedBox(height: 12),
-                ],
+                    const SizedBox(height: 16),
+                    // Moved Reporting Guidelines here
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      color: AppConstants.white,
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Theme(
+                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          title: const Text(
+                            'Reporting Guidelines',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppConstants.primaryBlue,
+                            ),
+                          ),
+                          trailing: Icon(
+                            _isGuidelinesExpanded
+                                ? Icons.expand_less
+                                : Icons.expand_more,
+                            color: AppConstants.primaryBlue,
+                          ),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text(
+                                    '1. Provide accurate details to assist government officials.',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '2. Avoid duplicate reports; check existing submissions.',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '3. Submit issues that benefit the public (e.g., infrastructure, safety).',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '4. Attach clear evidence (photos, documents) if available.',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onExpansionChanged: (bool expanded) {
+                            if (mounted) {
+                              setState(() {
+                                _isGuidelinesExpanded = expanded;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: Semantics(
+                        label: 'View Terms & Privacy Policy',
+                        child: TextButton(
+                          onPressed: _isSubmittingOverall ? null : () => Navigator.pushNamed(context, '/terms'),
+                          child: Text(
+                            'View Terms & Privacy Policy',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppConstants.primaryBlue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
   }
 }
 
