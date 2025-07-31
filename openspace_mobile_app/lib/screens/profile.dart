@@ -344,15 +344,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             title: 'Notifications',
             subtitle: 'Manage your notification preferences',
             onTap: () {
-              _showPopup(
-                context,
-                title: 'Notification Settings',
-                message: 'Notification preferences coming soon!',
-                buttonText: 'Okay',
-                icon: Icons.notifications_outlined,
-                iconColor: Colors.orangeAccent,
-                onConfirm: () => Navigator.pop(context),
-              );
+              Navigator.pushNamed(context, '/user-notification');
             },
           ),
           const SizedBox(height: 16),

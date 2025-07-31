@@ -5,6 +5,7 @@ import 'package:openspace_mobile_app/providers/locale_provider.dart';
 import 'package:openspace_mobile_app/providers/theme_provider.dart';
 import 'package:openspace_mobile_app/providers/user_provider.dart';
 import 'package:openspace_mobile_app/screens/Forget_password.dart';
+import 'package:openspace_mobile_app/screens/NotificationScreen.dart';
 import 'package:openspace_mobile_app/screens/Reset_Password.dart';
 import 'package:openspace_mobile_app/screens/book_openspace.dart';
 import 'package:openspace_mobile_app/screens/bookings.dart';
@@ -186,6 +187,7 @@ class MyApp extends StatelessWidget {
                   '/bookings-list': (context) => const MyBookingsPage(),
                   '/userReports': (context) => const UserReportsPage(),
                   '/forgot-password': (context) => const ForgotPasswordPage(),
+                  '/user-notification': (context) => const NotificationScreen(),
                 };
 
                 final WidgetBuilder? routeBuilder = routes[settings.name];

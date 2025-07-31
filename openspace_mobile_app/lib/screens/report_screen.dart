@@ -508,21 +508,7 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Center(
-                      child: Semantics(
-                        label: 'View Terms & Privacy Policy',
-                        child: TextButton(
-                          onPressed: _isSubmittingOverall ? null : () => Navigator.pushNamed(context, '/terms'),
-                          child: Text(
-                            'View Terms & Privacy Policy',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppConstants.primaryBlue,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+
                   ],
                 ),
               ),

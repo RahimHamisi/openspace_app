@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class ProfileService {
-  static const String _baseUrl = 'http://172.16.73.139:8000/'; // Update to HTTPS in production
+  static const String _baseUrl = 'http://172.18.7.92:8000/'; // Update to HTTPS in production
   static const String _profileEndpoint = 'api/v1/profile';
 
   static Future<Map<String, dynamic>> fetchProfile() async {

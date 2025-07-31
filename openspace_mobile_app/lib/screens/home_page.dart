@@ -172,7 +172,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           children: [
             IconButton(
               icon: const Icon(Icons.notifications_none, color: Colors.white, size: 24),
-              onPressed: () => setState(() => _notificationCount = 0),
+              onPressed: () {
+                // Navigate to NotificationScreen and reset notification count
+                Navigator.pushNamed(context, '/user-notification');
+                if (_notificationCount > 0) {
+                  setState(() => _notificationCount = 0);
+                }
+              },
             ),
             if (_notificationCount > 0)
               Positioned(
