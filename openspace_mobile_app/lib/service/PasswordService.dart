@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class PasswordService {
-  final String _baseUrl = "http://172.18.7.92:8000/api/v1";
+  final String _baseUrl = "http://192.168.224.233:8000/api/v1";
   // final Duration _timeoutDuration = const Duration(seconds: 60);
 
   Future<String> requestPasswordReset(String email) async {

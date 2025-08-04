@@ -5,7 +5,7 @@ import 'package:openspace_mobile_app/model/Booking.dart';
 import 'auth_service.dart';
 
 class BookingService {
-  static const String _baseUrl = "http://172.18.7.92:8000"; // Update to HTTPS in production
+  static const String _baseUrl = "http://192.168.224.233:8000"; // Update to HTTPS in production
   static const String _createBookingEndpoint = "/api/v1/book-open-space/";
   static const String _myBookingsEndpoint = "/api/v1/my-bookings/";
 
