@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:openspace_mobile_app/api/graphql/graphql_service.dart';
 import 'package:openspace_mobile_app/providers/locale_provider.dart';
 import 'package:openspace_mobile_app/providers/theme_provider.dart';
@@ -24,17 +26,30 @@ import 'package:openspace_mobile_app/screens/terms_and_conditions.dart';
 import 'package:openspace_mobile_app/screens/theme_change.dart';
 import 'package:openspace_mobile_app/screens/track_progress.dart';
 import 'package:openspace_mobile_app/screens/userreports.dart';
+import 'package:openspace_mobile_app/service/connectivity_service.dart';
+import 'package:openspace_mobile_app/service/sync_service.dart';
 import 'package:openspace_mobile_app/utils/alert/access_denied_dialog.dart';
 import 'package:openspace_mobile_app/utils/alert/error_dialog.dart';
 import 'package:openspace_mobile_app/utils/permission.dart';
 import 'package:openspace_mobile_app/utils/theme.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initHiveForFlutter();
+  await Hive.openBox('appData');
+  await EasyLocalization.ensureInitialized();
   await requestNotificationPermission();
-  runApp(const MyApp());
+  final syncService = SyncService();
+  syncService.initialize();
+  runApp(EasyLocalization(
+    supportedLocales: [Locale('en'), Locale('sw')],
+    path: 'assets/translations',
+    fallbackLocale: Locale('en'),
+    child: const MyApp(),
+  ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -50,12 +65,16 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         Provider<ValueNotifier<GraphQLClient>>(
             create: (_) => ValueNotifier(client)),
+        Provider(create: (_) => SharedPreferences.getInstance()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
           return GraphQLProvider(
             client: ValueNotifier(client),
             child: MaterialApp(
+              localizationsDelegates: context.localizationDelegates,
+              supportedLocales: context.supportedLocales,
+              locale: context.locale,
               debugShowCheckedModeBanner: false,
               title: 'Smart GIS App',
               theme: AppTheme.lightTheme,
