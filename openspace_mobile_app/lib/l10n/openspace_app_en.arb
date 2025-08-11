@@ -1,0 +1,220 @@
+
+{
+  "appTitle": "OpenSpace",
+  "@appTitle": {
+    "description": "App title displayed in various screens"
+  },
+  "homePageTitle": "Home",
+  "@homePageTitle": {
+    "description": "Title for the Home page"
+  },
+  "myBookingsTitle": "My Bookings",
+  "@myBookingsTitle": {
+    "description": "Title for the My Bookings page"
+  },
+  "bookingPageTitle": "Book Community Space",
+  "@bookingPageTitle": {
+    "description": "Title for the Booking page"
+  },
+  "introSliderTitle": "Report Issues",
+  "@introSliderTitle": {
+    "description": "Title for the Intro Slider screen1"
+  },
+  "introSliderDescription": "Easily report unusual activities in open spaces to keep your community safe",
+  "@introSliderDescription": {
+    "description": "description for the Intro Slider screen"
+  },
+  "introSliderTitle2": "Book Spaces",
+  "@introSliderTitle2": {
+    "description": "Title for the Intro Slider screen2"
+  },
+  "introSliderDescription2": "Reserve open spaces for community events or personal use with a few taps",
+  "@introSliderDescription2": {
+    "description": "description for the Intro Slider screen2"
+  },
+  "userTypeScreenLabel": "choose your user type",
+  "@userTypeScreenLabel": {
+    "description": "Label for User Type Screen"
+  },
+  "userTypeScreenText1": "Join Open Spaces",
+  "@userTypeScreenText1": {
+    "description": "Text1 for user Type Screen"
+  },
+  "userTypeScreenText2": "Sign in to track your reports and bookings, or continue anonymously to explore open spaces.",
+  "@userTypeScreenText2": {
+    "description": "Text2 for user Type Screen"
+  },
+  "userTypeScreenLabel1": "Sign in as Registered User",
+  "@userTypeScreenLabel1": {
+    "description": "label2 for user Type Screen"
+  },
+  "userTypeScreenText3": "Sign in as Registered User",
+  "@userTypeScreenText3": {
+    "description": "Text3 for user Type Screen"
+  },
+  "userTypeScreenLabel2": "Sign in as Anonymous User",
+  "@userTypeScreenLabel2": {
+    "description": "label2 for user Type Screen"
+  },
+  "userTypeScreenText4": "Sign in as Anonymous User",
+  "@userTypeScreenText4": {
+    "description": "Text4 for user Type Screen"
+  },
+  "userTypeScreenText5": "Terms & Privacy Policy",
+  "@userTypeScreenText5": {
+    "description": "text for showing terms and privacy"
+  },
+  "signInScreenWelcomeText": "Welcome Back",
+  "@signInScreenWelcomeText": {
+    "description": "welcome text in signIn Screen"
+  },
+
+  "signInScreenText1": "Please enter your credentials to sign in",
+  "@signInScreenText1": {
+    "description": "Text about instruction to put credential so as to sign in "
+  },
+  "changeLanguage": "Change Language",
+  "@changeLanguage": {
+    "description": "Label for language change option"
+  },
+  "bookingDetails": "Booking Details",
+  "@bookingDetails": {
+    "description": "Section title for booking form"
+  },
+  "fullName": "Full Name",
+  "@fullName": {
+    "description": "Label for full name field"
+  },
+  "phoneNumber": "Phone Number",
+  "@phoneNumber": {
+    "description": "Label for phone number field"
+  },
+  "emailAddress": "Email Address (Optional)",
+  "@emailAddress": {
+    "description": "Label for email address field"
+  },
+  "spaceNameDistrict": "Space Name / District",
+  "@spaceNameDistrict": {
+    "description": "Label for space name or district field"
+  },
+  "startDate": "Start Date",
+  "@startDate": {
+    "description": "Label for start date field"
+  },
+  "endDate": "End Date",
+  "@endDate": {
+    "description": "Label for end date field"
+  },
+  "startTime": "Start Time",
+  "@startTime": {
+    "description": "Label for start time field"
+  },
+  "endTime": "End Time",
+  "@endTime": {
+    "description": "Label for end time field"
+  },
+  "activitiesPlanned": "Activities Planned",
+  "@activitiesPlanned": {
+    "description": "Label for activities planned field"
+  },
+  "submitBookingRequest": "Submit Booking Request",
+  "@submitBookingRequest": {
+    "description": "Label for submit booking button"
+  },
+  "bookingTerms": "Booking Terms",
+  "@bookingTerms": {
+    "description": "Section title for booking terms"
+  },
+  "bookingAvailability": "Bookings are subject to availability",
+  "@bookingAvailability": {
+    "description": "Booking term about availability"
+  },
+  "arriveOnTime": "Please arrive on time for your scheduled slot",
+  "@arriveOnTime": {
+    "description": "Booking term about punctuality"
+  },
+  "cancellationPolicy": "Cancellations must be made at least 24 hours in advance",
+  "@cancellationPolicy": {
+    "description": "Booking term about cancellations"
+  },
+  "facilityRules": "Keep the space clean and follow all facility rules",
+  "@facilityRules": {
+    "description": "Booking term about facility rules"
+  },
+  "activeBookings": "Active Bookings",
+  "@activeBookings": {
+    "description": "Tab title for active bookings"
+  },
+  "pastBookings": "Past Bookings",
+  "@pastBookings": {
+    "description": "Tab title for past bookings"
+  },
+  "pendingBookings": "Pending Bookings",
+  "@pendingBookings": {
+    "description": "Tab title for pending bookings"
+  },
+  "noBookingsFound": "No bookings found.",
+  "@noBookingsFound": {
+    "description": "Message when no bookings are available"
+  },
+  "reportUnusualActivity": "Report Unusual Activity",
+  "@reportUnusualActivity": {
+    "description": "Title for report action card"
+  },
+  "reportedIssues": "Reported Issues",
+  "@reportedIssues": {
+    "description": "Title for reported issues action card"
+  },
+  "trackProgress": "Track Progress",
+  "@trackProgress": {
+    "description": "Title for track progress action card"
+  },
+  "bookOpenSpace": "Book Open Space",
+  "@bookOpenSpace": {
+    "description": "Title for book open space action card"
+  },
+  "quickActions": "Quick Actions",
+  "@quickActions": {
+    "description": "Section title for quick actions"
+  },
+  "welcomeToOpenSpace": "Welcome to OpenSpace!",
+  "@welcomeToOpenSpace": {
+    "description": "Welcome message on home page"
+  },
+  "darEsSalaam": "Dar es Salaam",
+  "@darEsSalaam": {
+    "description": "Location name on home page"
+  },
+  "communityHubDescription": "Your community hub for managing open spaces. Report issues, track progress, and book spaces with ease. Together, we're building a better Dar es Salaam.",
+  "@communityHubDescription": {
+    "description": "Description on home page"
+  },
+  "reportIssues": "Report Issues",
+  "@reportIssues": {
+    "description": "Title for report issues onboarding slide"
+  },
+  "reportIssuesDescription": "Easily report unusual activities in open spaces to keep your community safe.",
+  "@reportIssuesDescription": {
+    "description": "Description for report issues onboarding slide"
+  },
+  "bookSpaces": "Book Spaces",
+  "@bookSpaces": {
+    "description": "Title for book spaces onboarding slide"
+  },
+  "bookSpacesDescription": "Reserve open spaces for community events or personal use with a few taps.",
+  "@bookSpacesDescription": {
+    "description": "Description for book spaces onboarding slide"
+  },
+  "skip": "Skip",
+  "@skip": {
+    "description": "Label for skip button in onboarding"
+  },
+  "next": "Next",
+  "@next": {
+    "description": "Label for next button in onboarding"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Label for back button in onboarding"
+  }
+}
